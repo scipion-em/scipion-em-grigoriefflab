@@ -23,23 +23,61 @@
 # *  e-mail address 'scipion@cnb.csic.es'
 # *
 # **************************************************************************
-"""
-This modules contains constants related to Brandeis packages protocols
-"""
 
-#------------------ Constants values --------------------------------------
+# ------------------ Program common names --------------------------------------
+CTFFIND = 'CTFFIND'
+CTFFIND4 = 'CTFFIND4'
+UNBLUR = 'UNBLUR'
+SUMMOVIE = 'SUMMOVIE'
+CTFTILT = 'CTFTILT'
 
-#Modes of search/refinement/reconstruction
+# Frealign programs
+FREALIGN = 'FREALIGN'
+CALC_OCC = 'CALC_OCC'
+RSAMPLE = 'RSAMPLE'
+
+# Magdist
+MAGDIST = 'MAGDIST'
+MAGDISTEST = 'MAGDISTEST'
+MAGDISTCORR = 'MAGDISTCORR'
+
+
+V4_0_15 = '4.0.15'
+V4_1_10 = '4.1.10'
+
+MAGDIST_HOME = 'MAGDIST_HOME'
+SUMMOVIE_HOME = 'SUMMOVIE_HOME'
+UNBLUR_HOME = 'UNBLUR_HOME'
+FREALIGN_HOME = 'FREALIGN_HOME'
+CTFFIND4_HOME = 'CTFFIND4_HOME'
+CTFFIND_HOME = 'CTFFIND_HOME'
+
+CTFFIND_BIN = 'ctffind3.exe'
+CTFFINDMP_BIN = 'ctffind3_mp.exe'
+CTFFIND4_BIN = 'ctffind'
+CTFTILT_BIN = 'ctftilt.exe'
+CTFTILTMP_BIN = 'ctftilt_mp.exe'
+FREALIGN_BIN = 'frealign_v9.exe'
+FREALIGNMP_BIN = 'frealign_v9_mp.exe'
+MAGDISTEST_BIN = 'mag_distortion_estimate_openmp.exe'
+MAGDISTCORR_BIN = 'mag_distortion_correct_openmp.exe'
+CALC_OCC_BIN = 'calc_occ.exe'
+RSAMPLE_BIN = 'rsample.exe'
+UNBLUR_BIN = 'unblur_openmp.exe'
+SUMMOVIE_BIN = 'sum_movie_openmp.exe'
+
+# ------------------ Constants values --------------------------------------
+
+# Modes of search/refinement/reconstruction
 MOD_RECONSTRUCTION = 0
 MOD_REFINEMENT = 1
 MOD_RANDOM_SEARCH_REFINEMENT = 2
 MOD_SIMPLE_SEARCH_REFINEMENT = 3
 MOD_SEARCH_REFINE_RANDOMISE = 4
 
-#Modes for the first iteration
+# Modes for the first iteration
 MOD2_SIMPLE_SEARCH_REFINEMENT = 0
 MOD2_SEARCH_REFINE_RANDOMISE = 1
-
 
 # Methods to correct the Ewald sphere
 EWA_DISABLE = 0

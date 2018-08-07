@@ -32,18 +32,14 @@ import Tkinter as tk
 import ttk
 
 from pyworkflow.em.constants import *
-from constants import *
-
-from protocol_ctffind import ProtCTFFind
-from protocol_ctftilt import ProtCTFTilt
 import pyworkflow.gui.dialog as dialog
 from pyworkflow.em.wizard import *
-from protocol_refinement import ProtFrealign
-from protocol_ml_classification import ProtFrealignClassify
-from protocol_magdist_estimate import ProtMagDistEst
-from protocol_magdist_correct import ProtMagDistCorr
 
-from pyworkflow import findResource
+from grigoriefflab.constants import *
+from grigoriefflab.protocols import (
+    ProtFrealign, ProtFrealignClassify, ProtMagDistEst, ProtMagDistCorr,
+    ProtCTFFind, ProtCTFTilt)
+
 
 #===============================================================================
 # CTFs

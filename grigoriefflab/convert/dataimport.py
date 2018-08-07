@@ -1,8 +1,8 @@
 # **************************************************************************
 # *
-# * Authors:     J.M. De la Rosa Trevin (jmdelarosa@cnb.csic.es)
+# * Authors:     J.M. De la Rosa Trevin (delarosatrevin@scilifelab.se) [1]
 # *
-# * Unidad de  Bioinformatica of Centro Nacional de Biotecnologia , CSIC
+# * [1] SciLifeLab, Stockholm University
 # *
 # * This program is free software; you can redistribute it and/or modify
 # * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ import os
 
 import pyworkflow.utils as pwutils 
 from pyworkflow.em.data import CTFModel, SetOfParticles
-from convert import readCtfModel, ctffindOutputVersion, readSetOfParticles
+from .convert import readCtfModel, ctffindOutputVersion, readSetOfParticles
 
 
 class GrigorieffLabImportCTF():

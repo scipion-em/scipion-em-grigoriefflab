@@ -1,9 +1,9 @@
 # **************************************************************************
 # *
 # * Authors:     Josue Gomez BLanco (josue.gomez-blanco@mcgill.ca)
-# *              J.M. De la Rosa Trevin (jmdelarosa@cnb.csic.es)
+# *              J.M. De la Rosa Trevin (delarosatrevin@scilifelab.se) [2]
 # *
-# * Unidad de  Bioinformatica of Centro Nacional de Biotecnologia , CSIC
+# * [2] SciLifeLab, Stockholm University
 # *
 # * This program is free software; you can redistribute it and/or modify
 # * it under the terms of the GNU General Public License as published by
@@ -30,12 +30,11 @@ import sys
 import pyworkflow.utils as pwutils
 import pyworkflow.em as em
 import pyworkflow.protocol.params as params
-from grigoriefflab import (CTFFIND_PATH, CTFFINDMP_PATH,
-                           CTFFIND4_PATH, getVersion,
-                           CTFFIND4_HOME, CTFFIND_HOME, CTFFIND4_APP, V4_0_15,
-                           V4_1_10)
-from convert import (readCtfModel, parseCtffindOutput,
-                     parseCtffind4Output)
+
+import grigoriefflab
+from grigoriefflab.constants import (V4_0_15, V4_1_10)
+from grigoriefflab.convert import (readCtfModel, parseCtffindOutput,
+                                   parseCtffind4Output)
 
 
 class ProtCTFFind(em.ProtCTFMicrographs):
@@ -369,7 +368,7 @@ eof
 %(maxDefocus)f
 %(step_focus)f"""
 
-        if getVersion(CTFFIND4_APP) in ['4.1.5', '4.1.8', V4_1_10]:
+        if getVersion(CTFFIND4) in ['4.1.5', '4.1.8', V4_1_10]:
             if self.findPhaseShift:
                 self._args += """
 no
@@ -395,7 +394,7 @@ yes
 %(resamplePix)s
 eof
 """
-        elif getVersion(CTFFIND4_APP) == V4_0_15:
+        elif getVersion(CTFFIND4) == V4_0_15:
             if self.findPhaseShift:
                 self._args += """
 %(astigmatism)f

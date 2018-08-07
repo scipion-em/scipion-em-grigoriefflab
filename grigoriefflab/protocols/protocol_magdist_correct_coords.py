@@ -1,8 +1,8 @@
 # **************************************************************************
 # *
-# * Authors:     Grigory Sharov (sharov@igbmc.fr)
+# * Authors:     Grigory Sharov (gsharov@mrc-lmb.cam.ac.uk) [1]
 # *
-# * L'Institut de genetique et de biologie moleculaire et cellulaire (IGBMC)
+# * [1] MRC Laboratory of Molecular Biology (MRC-LMB)
 # *
 # * This program is free software; you can redistribute it and/or modify
 # * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,13 @@
 # *
 # **************************************************************************
 
-import pyworkflow.protocol.params as params
 from pyworkflow import VERSION_1_1
-from pyworkflow.em.packages.grigoriefflab import \
-    validateMagDistorsionInstallation
+import pyworkflow.protocol.params as params
 from pyworkflow.utils.properties import Message
 from pyworkflow.em.protocol import EMProtocol
-from convert import parseMagCorrInput, unDistortCoord
+
+#from grigoriefflab import validateMagDistorsionInstallation
+from grigoriefflab.convert import parseMagCorrInput, unDistortCoord
 
 
 class ProtMagDistCorrCoord(EMProtocol):
@@ -49,7 +49,8 @@ class ProtMagDistCorrCoord(EMProtocol):
         and there are not errors. If some errors are found, a list with
         the error messages will be returned.
         """
-        return validateMagDistorsionInstallation()
+        # FIXME
+        return [] #validateMagDistorsionInstallation()
 
     # --------------------------- DEFINE params functions ----------------------
 

@@ -30,13 +30,13 @@ from math import ceil
 import pyworkflow.utils as pwutils
 import pyworkflow.em as em
 from pyworkflow.em.data import MovieAlignment
-from pyworkflow.em.packages.xmipp3.convert import writeShiftsMovieAlignment
 from pyworkflow.em.protocol import ProtAlignMovies
 import pyworkflow.protocol.params as params
 from pyworkflow.gui.plotter import Plotter
-from grigoriefflab import UNBLUR_PATH, getVersion, UNBLUR_HOME
-from convert import readShiftsMovieAlignment
+from xmipp3.convert import writeShiftsMovieAlignment
 
+import grigoriefflab
+from grigoriefflab.convert import readShiftsMovieAlignment
 
 
 class ProtUnblur(ProtAlignMovies):
@@ -57,8 +57,9 @@ class ProtUnblur(ProtAlignMovies):
         """
         missingPaths = []
 
-        if not os.path.exists(UNBLUR_PATH):
-            missingPaths.append("%s : %s" % (UNBLUR_HOME, UNBLUR_PATH))
+        # FIXME
+        # if not os.path.exists(UNBLUR_PATH):
+        #     missingPaths.append("%s : %s" % (UNBLUR_HOME, UNBLUR_PATH))
         return missingPaths
 
     def _defineAlignmentParams(self, form):
@@ -262,22 +263,30 @@ class ProtUnblur(ProtAlignMovies):
     def _validate(self):
 
         errors = []
-        if not os.path.exists(UNBLUR_PATH):
-            errors.append(
-                "Cannot find the Unblur program at: " + UNBLUR_PATH)
-        if self.inputMovies.get():
+        unblur = self._getProgram()
+        if not os.path.exists(unblur):
+            errors.append("Cannot find the Unblur program at: " + unblur)
 
-            if self.doApplyDoseFilter:
-                inputMovies = self.inputMovies.get()
-                doseFrame = inputMovies.getAcquisition().getDosePerFrame()
+        inputMovies = self.inputMovies.get()
+        if inputMovies and self.doApplyDoseFilter:
+            doseFrame = inputMovies.getAcquisition().getDosePerFrame()
 
-                if doseFrame == 0.0 or doseFrame is None:
-                    errors.append('Dose per frame for input movies is 0 or not '
-                                  'set. You cannot apply dose filter.')
+            if doseFrame == 0.0 or doseFrame is None:
+                errors.append('Dose per frame for input movies is 0 or not '
+                              'set. You cannot apply dose filter.')
 
         return errors
 
     #--------------------------- UTILS functions -------------------------------
+    def _getProgram(self):
+        return grigoriefflab.Plugin.getProgram(UNBLUR)
+
+    def _getVersion(self):
+        return grigoriefflab.Plugin.getActiveVersion(UNBLUR)
+
+    def _isNewUnblur(self):
+        return self._getVersion() != '1.0.150529'
+
     def _argsUnblur(self, movie, numberOfFrames):
         """ Format argument for call unblur program. """
         args = {'movieName': self._getMovieFn(movie),
@@ -303,9 +312,9 @@ class ProtUnblur(ProtAlignMovies):
         # Avoid threads multiplication
         # self._program = 'export OMP_NUM_THREADS=%d; ' % self.numberOfThreads.get()
         self._program = 'export OMP_NUM_THREADS=%d; ' % self.openmpThreads
-        self._program += UNBLUR_PATH
+        self._program += self._getProgram()
 
-        if getVersion('UNBLUR') != '1.0_150529':
+        if self._isNewUnblur():
             args['preExposureAmount'] = movie.getAcquisition().getDoseInitial() or 0.0
             self._args = """ << eof
 %(movieName)s
@@ -433,9 +442,6 @@ eof
 
         return first, last
 
-    def _isNewUnblur(self):
-        return True if getVersion('UNBLUR') != '1.0.150529' else False
-
     def _doComputeMicThumbnail(self):
         return self.doComputeMicThumbnail.get()
 
@@ -467,6 +473,7 @@ eof
         plotter = createGlobalAlignmentPlot(shiftsX, shiftsY, first)
         plotter.savefig(self._getPlotGlobal(movie))
         plotter.close()
+
 
 def createGlobalAlignmentPlot(meanX, meanY, first):
     """ Create a plotter with the shift per frame. """

@@ -31,8 +31,10 @@ import os
 from pyworkflow.utils import copyFile
 import pyworkflow.em as em
 from pyworkflow.em.data import Volume
-from pyworkflow.em.packages.grigoriefflab.grigoriefflab import FREALIGNMP_PATH, RSAMPLE_PATH, CALC_OCC_PATH
-from protocol_frealign_base import ProtFrealignBase
+
+import grigoriefflab
+from grigoriefflab.convert import rowToAlignment, OrderedDict, HEADER_COLUMNS
+from grigoriefflab.protocols import ProtFrealignBase
 
 
 class ProtFrealignClassify(ProtFrealignBase, em.ProtClassify3D):
@@ -50,7 +52,7 @@ marginal likelihood.
     def __init__(self, **args):
         ProtFrealignBase.__init__(self, **args)
     
-#--------------------------- INSERT steps functions --------------------------------------------
+    # -------------------------- INSERT steps functions -----------------------
     def _insertContinueStep(self):
         if self.doContinue:
             continueRun = self.continueRun.get()
@@ -77,11 +79,16 @@ marginal likelihood.
             initId = self._insertFunctionStep('initIterStep', iterN)
             paramsDic = self._getParamsIteration(iterN)
             depsRefine = self._insertRefineIterStep(iterN, paramsDic, [initId])
-            firstOccId = self._insertFunctionStep("calculateOCCStep", iterN, False, prerequisites=depsRefine)
+            firstOccId = self._insertFunctionStep("calculateOCCStep",
+                                                  iterN, False,
+                                                  prerequisites=depsRefine)
             for ref in self._allRefs():
-                reconsId = self._insertFunctionStep("reconstructVolumeStep", iterN, ref, paramsDic, prerequisites=[firstOccId])
+                reconsId = self._insertFunctionStep("reconstructVolumeStep",
+                                                    iterN, ref, paramsDic,
+                                                    prerequisites=[firstOccId])
                 depsRecons.append(reconsId)
-            self._insertFunctionStep("calculateOCCStep", iterN, True, prerequisites=depsRecons)
+            self._insertFunctionStep("calculateOCCStep", iterN, True,
+                                     prerequisites=depsRecons)
 #             depsOcc = [secondOccId]
     
     def _insertRefineIterStep(self, iterN, paramsDic, depsInitId):
@@ -91,16 +98,24 @@ marginal likelihood.
         
         if iterN == 1:
             if not self.useInitialAngles.get():
-                stepConstructId = self._insertFunctionStep("constructParamFilesStep", paramsDic, prerequisites=depsInitId)
+                stepConstructId = self._insertFunctionStep(
+                    "constructParamFilesStep", paramsDic,
+                    prerequisites=depsInitId)
                 depsConstruct = [stepConstructId]
+
                 for block in self._allBlocks():
-                    refineId = self._insertFunctionStep("refineBlockStep", block, prerequisites=depsConstruct)
+                    refineId = self._insertFunctionStep(
+                        "refineBlockStep", block, prerequisites=depsConstruct)
                     depsRefine.append(refineId)
             else:
-                initAngStepId = self._insertFunctionStep("writeInitialAnglesStep", prerequisites=depsInitId)
+                initAngStepId = self._insertFunctionStep(
+                    "writeInitialAnglesStep", prerequisites=depsInitId)
                 paramsDic['paramRefine'] = '0, 0, 0, 1, 1'
+
                 for block in self._allBlocks():
-                    refineId = self._insertFunctionStep("refineParticlesStep", iterN, block, paramsDic, prerequisites=[initAngStepId])
+                    refineId = self._insertFunctionStep(
+                        "refineParticlesStep", iterN, block, paramsDic,
+                        prerequisites=[initAngStepId])
                     depsRefine.append(refineId)
         else:
             
@@ -121,7 +136,9 @@ marginal likelihood.
                         paramsDic['mode'] = 1
                         paramsDic['paramRefine'] = '0, 0, 0, 0, 0'
                     
-                    refineId = self._insertFunctionStep("refineClassParticlesStep", iterN, ref, block, paramsDic, prerequisites=depsInitId)
+                    refineId = self._insertFunctionStep(
+                        "refineClassParticlesStep", iterN, ref, block, paramsDic,
+                        prerequisites=depsInitId)
                     depsRefine.append(refineId)
         return depsRefine
     
@@ -185,7 +202,7 @@ marginal likelihood.
         iterDir = self._iterWorkingDir(iterN)
         
         os.environ['NCPUS'] = str(self.cpuList[ref-1])
-        paramsDic['frealign'] = FREALIGNMP_PATH
+        paramsDic['frealign'] = grigoriefflab.Plugin.getProgram(FREALIGN, useMP=True)
         paramsDic['outputParFn'] = self._getBaseName('output_vol_par_class', iter=iterN, ref=ref)
         paramsDic['initParticle'] = initParticle
         paramsDic['finalParticle'] = finalParticle
@@ -211,7 +228,7 @@ marginal likelihood.
             samplingRate = imgSet.getSamplingRate()
             rootFn = self._getBaseName('output_par_class_tmp', iter=iterN)
             args  = self._rsampleCommand()
-            program = RSAMPLE_PATH
+            program = grigoriefflab.Plugin.getProgram(FREALIGN, RSAMPLE)
         else:
             args = self._occCommand()
             tmp = ''
@@ -221,8 +238,8 @@ marginal likelihood.
                 args += '%s\n' % self._getBaseName('output_par_class', iter=iterN, ref=ref)
                 tmp += '%s\n' % self._getBaseName('output_par_class', iter=iterN, ref=ref)
             args = args + tmp + 'eot'
-            program = CALC_OCC_PATH
-        
+            program = grigoriefflab.Plugin.getProgram(FREALIGN, CALC_OCC_PATH)
+
         self.runJob(program, args % locals(), cwd=iterDir)
         
         if isLastIterStep:
@@ -254,7 +271,7 @@ marginal likelihood.
             self._defineSourceRelation(self.input3DReference, clsSet)
             self._defineSourceRelation(self.input3DReference, volumes)
     
-    #--------------------------- INFO functions ----------------------------------------------------
+    # -------------------------- INFO functions -------------------------------
     def _validate(self):
         errors = ProtFrealignBase._validate(self)
         
@@ -263,7 +280,7 @@ marginal likelihood.
         
         return errors
     
-    #--------------------------- UTILS functions ---------------------------------------------------
+    # -------------------------- UTILS functions ------------------------------
     def _setParamsClassRefineParticles(self, iterN, ref, block):
         paramDics = {}
         paramDics['stopParam'] = -100
@@ -413,7 +430,6 @@ eot
                      iterParams=params)
     
     def _updateParticle(self, item, row):
-        from convert import rowToAlignment, OrderedDict, HEADER_COLUMNS
         item.setClassId(row[0])
         vals = OrderedDict(zip(HEADER_COLUMNS, row[1]))
         item.setTransform(rowToAlignment(vals, item.getSamplingRate()))

@@ -1,8 +1,8 @@
 # **************************************************************************
 # *
-# * Authors:     Grigory Sharov (sharov@igbmc.fr)
+# * Authors:     Grigory Sharov (gsharov@mrc-lmb.cam.ac.uk) [1]
 # *
-# * L'Institut de genetique et de biologie moleculaire et cellulaire (IGBMC)
+# * [1] MRC Laboratory of Molecular Biology (MRC-LMB)
 # *
 # * This program is free software; you can redistribute it and/or modify
 # * it under the terms of the GNU General Public License as published by
@@ -35,8 +35,9 @@ import pyworkflow.utils.path as pwutils
 from pyworkflow.em.protocol import ProtProcessMovies
 from pyworkflow.em.data import SetOfMovies
 
-from grigoriefflab import MAGDISTCORR_PATH, validateMagDistorsionInstallation
-from convert import parseMagCorrInput
+import grigoriefflab
+from grigoriefflab.constants import MAGDIST, MAGDISTCORR
+from grigoriefflab.convert import parseMagCorrInput
 
 
 class ProtMagDistCorr(ProtProcessMovies):
@@ -58,7 +59,8 @@ class ProtMagDistCorr(ProtProcessMovies):
         and there are not errors. If some errors are found, a list with
         the error messages will be returned.
         """
-        return validateMagDistorsionInstallation()
+        # FIXME
+        return [] #validateMagDistorsionInstallation()
 
     # --------------------------- DEFINE params functions ----------------------
 
@@ -238,12 +240,13 @@ class ProtMagDistCorr(ProtProcessMovies):
     def _validate(self):
         errors = []
         # Check that the program exists
-        if not exists(MAGDISTCORR_PATH):
+        magdistcorr = self._getProgram()
+        if not exists(magdistcorr):
             errors.append("Binary '%s' does not exits.\n"
                           "Check configuration file: \n"
                           "~/.config/scipion/scipion.conf\n"
                           "and set MAGDIST_HOME variable properly."
-                          % MAGDISTCORR_PATH)
+                          % magdistcorr)
 
         inputMovies = self.inputMovies.get()
         if self.doGain and inputMovies.getGain() is None:
@@ -270,12 +273,14 @@ class ProtMagDistCorr(ProtProcessMovies):
         return txt
 
     # --------------------------- UTILS functions ------------------------------
+    def _getProgram(self):
+        return grigoriefflab.Plugin.getProgram(MAGDIST, MAGDISTCORR)
 
     def getOutputLog(self, movie):
         return 'micrograph_%06d_Log.txt' % movie.getObjId()
 
     def _argsMagDistCor(self):
-        self._program = 'export NCPUS=%(nthr)d ; ' + MAGDISTCORR_PATH
+        self._program = 'export NCPUS=%(nthr)d ; ' + self._getProgram()
 
         if self.doGain and self.doResample:
             self._args = """   << eof > %(logFn)s

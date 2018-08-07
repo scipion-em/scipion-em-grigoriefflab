@@ -139,7 +139,7 @@ def rowToCtfModel(ctfRow, ctfModel):
     ctfModel.setStandardDefocus(defocusU, defocusV, defocusAngle)
 
 
-#-------------- Old fuctions (before using EMX matrix for alignment) ------
+# ------------- Old fuctions (before using EMX matrix for alignment) ------
 def parseCtffindOutput(filename):
     """ Retrieve defocus U, V and angle from the
     output file of the ctffind3 execution.

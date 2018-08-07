@@ -30,8 +30,10 @@ import pyworkflow.utils as pwutils
 import pyworkflow.em as em
 import pyworkflow.protocol.params as params
 from pyworkflow import VERSION_1_2
-from grigoriefflab import CTFTILT_PATH, CTFTILTMP_PATH, CTFFIND_HOME
-from convert import readCtfModel, parseCtftiltOutput
+
+import grigoriefflab
+from grigoriefflab.constants import (CTFFIND, CTFTILT)
+from grigoriefflab.convert import readCtfModel, parseCtftiltOutput
 
 
 class ProtCTFTilt(em.ProtCTFMicrographs):
@@ -53,9 +55,12 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
         """
         missingPaths = []
 
-        if not os.path.exists(CTFTILT_PATH):
-            missingPaths.append("%s : ctffind3/ctftilt installation not found"
-                                " - %s" % (CTFFIND_HOME, CTFTILT_PATH))
+        # FIXME
+        # ctftilt = cls._getProgram()
+        #
+        # if not os.path.exists(ctftilt):
+        #     missingPaths.append("%s : ctffind3/ctftilt installation not found"
+        #                         % ctftilt)
         return missingPaths
 
     def _defineProcessParams(self, form):
@@ -65,13 +70,14 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
                       help='Expected amount of astigmatism in Angstrom. ')
 
         line = form.addLine('Tilt angle',
-                            help='Expected tilt angle value and its uncertainty in degrees.')
+                            help='Expected tilt angle value and its '
+                                 'uncertainty in degrees.')
         line.addParam('tiltA', params.FloatParam, default=0.,
                       label='Expected value')
         line.addParam('tiltR', params.FloatParam, default=5.,
                       label='Uncertainty')
 
-    #--------------------------- STEPS functions ------------------------------
+    # --------------------------- STEPS functions -----------------------------
     def _estimateCTF(self, micFn, micDir, micName):
         """ Run ctftilt with required parameters """
 
@@ -90,11 +96,11 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
             if downFactor != 1:
                 # Replace extension by 'mrc' because there are some formats
                 # that cannot be written (such as dm3)
-                import pyworkflow.em.packages.xmipp3 as xmipp3
+                import xmipp3
                 args = "-i %s -o %s --step %f --method fourier" % (micFn, micFnMrc, downFactor)
                 self.runJob("xmipp_transform_downsample",
                             args, env=xmipp3.getEnviron())
-                self._params['scannedPixelSize'] =  scannedPixelSize * downFactor
+                self._params['scannedPixelSize'] = scannedPixelSize * downFactor
             else:
                 ih = em.ImageHandler()
                 if ih.existsLocation(micFn):
@@ -109,14 +115,14 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
             self._params['ctftiltOut'] = self._getCtfOutPath(micDir)
             self._params['ctftiltPSD'] = self._getPsdPath(micDir)
 
-        except Exception, ex:
+        except Exception as ex:
             print >> sys.stderr, "Some error happened: %s" % ex
             import traceback
             traceback.print_exc()
 
         try:
             self.runJob(self._program, self._args % self._params)
-        except Exception, ex:
+        except Exception as ex:
             print >> sys.stderr, "ctftilt has failed with micrograph %s" % micFnMrc
 
         # Let's notify that this micrograph have been processed
@@ -150,7 +156,7 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
         pwutils.cleanPath(psdFile)
         try:
             self.runJob(self._program, self._args % self._params)
-        except Exception, ex:
+        except Exception as ex:
             print >> sys.stderr, "ctftilt has failed with micrograph %s" % micFnMrc
         pwutils.cleanPattern(micFnMrc)
 
@@ -179,8 +185,8 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
     #--------------------------- INFO functions -------------------------------
     def _validate(self):
         errors = []
-        thr = self.numberOfThreads.get()
-        ctftilt = CTFTILT_PATH if thr > 1 else CTFTILTMP_PATH
+        ctftilt = self._getProgram()
+
         if not os.path.exists(ctftilt):
             errors.append('Missing %s' % ctftilt)
 
@@ -198,7 +204,11 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
 
         return [methods]
 
-    #--------------------------- UTILS functions ------------------------------
+    # -------------------------- UTILS functions ------------------------------
+    def _getProgram(self):
+        return grigoriefflab.Plugin.getProgram(CTFFIND, CTFTILT,
+                                               useMP=self.numberOfThreads > 1)
+
     def _prepareCommand(self):
         sampling = self.inputMics.getSamplingRate() * self.ctfDownFactor.get()
         # Convert digital frequencies to spatial frequencies
@@ -239,13 +249,16 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
         self._params['tiltAngle'] = self.tiltA.get()
         self._params['tiltR'] = self.tiltR.get()
         self._argsCtftilt()
-       
+
+    def _useThreads(self):
+        return self.numberOfThreads > 1
+
+    def _getProgram(self):
+        return grigoriefflab.Plugin.getProgram(CTFTILT, useMP=self._useThreads())
     def _argsCtftilt(self):
-        self._program = 'export NATIVEMTZ=kk ; '
-        if self.numberOfThreads.get() > 1:
-            self._program += 'export NCPUS=%d ;' % self.numberOfThreads.get() + CTFTILTMP_PATH
-        else:
-            self._program += CTFTILT_PATH
+        self._program = ('export NATIVEMTZ=kk ; %s %s' %
+                         ('export NCPUS=%d ;' if self._useThreads() else '',
+                          self._getProgram()))
         self._args = """   << eof > %(ctftiltOut)s
 %(micFn)s
 %(ctftiltPSD)s

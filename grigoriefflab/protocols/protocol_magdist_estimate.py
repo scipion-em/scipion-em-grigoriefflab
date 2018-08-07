@@ -32,8 +32,7 @@ import pyworkflow.utils.path as pwutils
 from pyworkflow import VERSION_1_1
 from pyworkflow.em.protocol import ProtPreprocessMicrographs
 
-from grigoriefflab import MAGDISTEST_PATH, validateMagDistorsionInstallation
-from convert import parseMagEstOutput
+from grigoriefflab.convert import parseMagEstOutput
 
 
 class ProtMagDistEst(ProtPreprocessMicrographs):
@@ -52,15 +51,14 @@ class ProtMagDistEst(ProtPreprocessMicrographs):
         and there are not errors. If some errors are found, a list with
         the error messages will be returned.
         """
-        return validateMagDistorsionInstallation()
-
+        # FIXME
+        return []  # validateMagDistorsionInstallation()
 
     def __init__(self, **args):
         ProtPreprocessMicrographs.__init__(self, **args)
         self.stepsExecutionMode = cons.STEPS_SERIAL
 
     # --------------------------- DEFINE params functions ----------------------
-
     def _defineParams(self, form):
         form.addSection(label='Input')
         form.addParam('inputMicrographs', params.PointerParam,
@@ -111,7 +109,6 @@ class ProtMagDistEst(ProtPreprocessMicrographs):
                       expertLevel=params.LEVEL_ADVANCED,
                       label='Amplitude box size',
                       help='Box size for the calculated amplitudes.')
-
 
         form.addParallelSection(threads=2, mpi=0)
 
@@ -180,6 +177,7 @@ class ProtMagDistEst(ProtPreprocessMicrographs):
     def _validate(self):
         errors = []
         # Check that the program exists
+        magdistest = grigoriefflab.Plugin.getProgram()
         if not exists(MAGDISTEST_PATH):
             errors.append("Binary '%s' does not exits.\n"
                           "Check configuration file: \n"

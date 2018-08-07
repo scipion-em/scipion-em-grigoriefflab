@@ -31,8 +31,9 @@ import pyworkflow.protocol.constants as cons
 import pyworkflow.utils.path as pwutils
 from pyworkflow.em.protocol import ProtAlignMovies, ProtProcessMovies
 
-from grigoriefflab import SUMMOVIE_PATH, SUMMOVIE_HOME
-from convert import writeShiftsMovieAlignment
+import grigoriefflab
+from grigoriefflab.constants import SUMMOVIE
+from grigoriefflab.convert import writeShiftsMovieAlignment
 
 
 class ProtSummovie(ProtAlignMovies):
@@ -55,12 +56,12 @@ class ProtSummovie(ProtAlignMovies):
         """
         missingPaths = []
 
-        if not os.path.exists(SUMMOVIE_PATH):
-            missingPaths.append("%s : %s" % (SUMMOVIE_HOME,SUMMOVIE_PATH))
+        # FIXME
+        # if not os.path.exists(SUMMOVIE_PATH):
+        #     missingPaths.append("%s : %s" % (SUMMOVIE_HOME,SUMMOVIE_PATH))
         return missingPaths
 
-
-    #--------------------------- DEFINE param functions ------------------------
+    # -------------------------- DEFINE param functions -----------------------
     def _defineAlignmentParams(self, form):
         form.addHidden('binFactor', params.FloatParam, default=1.)
 
@@ -103,7 +104,7 @@ class ProtSummovie(ProtAlignMovies):
         
         form.addParallelSection(threads=1, mpi=1)
     
-    #--------------------------- STEPS functions -------------------------------
+    # -------------------------- STEPS functions ------------------------------
     def _processMovie(self, movie):
         try:
             self._createLink(movie)
@@ -141,22 +142,21 @@ class ProtSummovie(ProtAlignMovies):
             print("ERROR: Movie %s failed.\n"
                   "       Message: %s\n" % (movie.getFileName(), e))
     
-    #--------------------------- INFO functions --------------------------------
+    # -------------------------- INFO functions -------------------------------
     def _citations(self):
-
         return ["Grant2015.2"]
         
     def _methods(self):
         return []
 
     def _validate(self):
+        inputMovies = self.inputMovies.get()
 
-        if self.inputMovies.get() is None:
+        if inputMovies is None:
             return
 
         errors = []
 
-        inputMovies = self.inputMovies.get()
         firstFrame, lastFrame, _ = inputMovies.getFramesRange()
         frames = lastFrame - firstFrame + 1
 
@@ -176,9 +176,10 @@ class ProtSummovie(ProtAlignMovies):
                               "than first frame (%d)"
                               % (sN, s0))
 
-        if not exists(SUMMOVIE_PATH):
+        summovie = self._getProgram()
+        if not exists(summovie):
             errors.append("Cannot find the Summovie program at: %s"
-                          % SUMMOVIE_PATH)
+                          % summovie)
 
         # If this protocol is going to delete the input movies, let's double
         # check that they has been produced by the previous protocol and
@@ -204,13 +205,16 @@ class ProtSummovie(ProtAlignMovies):
 
         return errors
     
-    #--------------------------- UTILS functions -------------------------------
+    # -------------------------- UTILS functions ------------------------------
+    def _getProgram(self):
+        return grigoriefflab.Plugin.getProgram(SUMMOVIE)
+
     def _argsSummovie(self):
 
         # Avoid threads multiplication
         # self._program = 'export OMP_NUM_THREADS=%d; ' % self.numberOfThreads.get()
         self._program = 'export OMP_NUM_THREADS=1; '
-        self._program += SUMMOVIE_PATH
+        self._program += self._getProgram()
         self._args = """ << eof
 %(movieFn)s
 %(numberOfFrames)s

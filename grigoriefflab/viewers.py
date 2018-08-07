@@ -26,7 +26,7 @@
 
 import os
 from os.path import exists, relpath
-from pyworkflow.utils.path import cleanPath, removeExt
+from pyworkflow.utils import cleanPath, removeExt
 from pyworkflow.viewer import (Viewer, ProtocolViewer,
                                DESKTOP_TKINTER, WEB_DJANGO)
 from pyworkflow.em.viewer import DataView, CtfView
@@ -38,10 +38,8 @@ from pyworkflow.em.plotter import EmPlotter
 from pyworkflow.protocol.constants import LEVEL_ADVANCED
 from pyworkflow.protocol.params import (LabelParam, NumericRangeParam,IntParam,
                                         EnumParam, FloatParam)
-from protocol_magdist_estimate import ProtMagDistEst
-from protocol_refinement import ProtFrealign
-from protocol_ml_classification import ProtFrealignClassify
-from protocol_ctffind import ProtCTFFind
+from grigoriefflab.protocols import (
+    ProtMagDistEst, ProtFrealign, ProtFrealignClassify, ProtCTFFind)
 
 
 LAST_ITER = 0

@@ -37,15 +37,9 @@ from pyworkflow.protocol.params import (StringParam, BooleanParam, IntParam,
 from pyworkflow.em.protocol import EMProtocol
 from pyworkflow.em.convert import ImageHandler
 
-from constants import (MOD2_SIMPLE_SEARCH_REFINEMENT, MOD_REFINEMENT,
-                       EWA_DISABLE, FSC_CALC, MEM_0, INTERPOLATION_1,
-                       REF_ALL, MOD_RECONSTRUCTION,
-                       MOD_RANDOM_SEARCH_REFINEMENT,
-                       MOD_SIMPLE_SEARCH_REFINEMENT, EWA_REFERENCE,
-                       EWA_SIMPLE_HAND, EWA_SIMPLE, FSC_3DR_ODD, FSC_3DR_EVEN,
-                       FSC_3DR_ALL, MEM_1, MEM_2, INTERPOLATION_0,
-                       REF_ANGLES, REF_SHIFTS)
-from grigoriefflab import FREALIGN, FREALIGN_PATH, FREALIGNMP_PATH, FREALIGN_HOME_VAR
+import grigoriefflab
+from grigoriefflab.convert import geometryFromMatrix
+from grigoriefflab.constants import *
 
 
 class ProtFrealignBase(EMProtocol):
@@ -65,9 +59,10 @@ class ProtFrealignBase(EMProtocol):
         """
         missingPaths = []
 
-        if not os.path.exists(FREALIGN_PATH):
-            missingPaths.append("%s : Freealign installation not "
-                                " - %s" % (FREALIGN_HOME_VAR, FREALIGN_PATH))
+        # FIXME
+        # if not os.path.exists(self._getProgram()):
+        #     missingPaths.append("Missing FREALIGN installation at %s" %
+        #                         grigoriefflab.Plugin.getHome(FREALIGN))
         return missingPaths
 
     def __init__(self, **args):
@@ -718,7 +713,7 @@ class ProtFrealignBase(EMProtocol):
         finalParticle = self._getInputParticles().getSize()
 
         os.environ['NCPUS'] = str(self.numberOfBlocks)
-        paramsDic['frealign'] = FREALIGNMP_PATH
+        paramsDic['frealign'] = self._getProgram()
         paramsDic['outputParFn'] = self._getBaseName('output_vol_par', iter=iterN)
         paramsDic['initParticle'] = initParticle
         paramsDic['finalParticle'] = finalParticle
@@ -743,7 +738,7 @@ class ProtFrealignBase(EMProtocol):
         imgSet = self._getInputParticles()
         partSizeX = imgSet.getXDim()
 
-        self.validatePackageVersion('FREALIGN_HOME', errors)
+        # FIXME self.validatePackageVersion('FREALIGN_HOME', errors)
 
         if not self.doContinue:
             self._validateDim(imgSet, self.input3DReference.get(), errors,
@@ -785,12 +780,15 @@ class ProtFrealignBase(EMProtocol):
         return self._summary()
 
     #--------------------------- UTILS functions -------------------------------
+    def _getProgram(self, useMP=False):
+        return grigoriefflab.Plugin.getProgram(FREALIGN, useMP=useMP)
+
     def _getParamsIteration(self, iterN):
         """ Defining the current iteration """
         imgSet = self._getInputParticles()
 
         #Prepare arguments to call program fralign_v9.exe
-        paramsDic = {'frealign': FREALIGN_PATH,
+        paramsDic = {'frealign': self._getProgram(),
                      'mode': self.mode.get(),
                      'innerRadius': self.innerRadius.get(),
                      'outerRadius': self.outerRadius.get(),
@@ -998,8 +996,9 @@ class ProtFrealignBase(EMProtocol):
 
     def __openParamFile(self, blockNumber, paramsDict):
         """ Open the file and write the first part of the block param file. """
-        if not exists(FREALIGN_PATH):
-            raise Exception('Missing ' + FREALIGN)
+        frealign = self._getProgram()
+        if not exists(frealign):
+            raise Exception('Missing ' + frealign)
         initaLines = """%(frealign)s << eot > %(logFile)s
 M,%(mode2)s,%(doMagRefinement)s,%(doDefocusRef)s,%(doAstigRef)s,%(doDefocusPartRef)s,%(metEwaldSphere)s,%(doExtraRealSpaceSym)s,%(doWienerFilter)s,%(doBfactor)s,%(writeMatchProj)s,%(metFsc)s,%(doAditionalStatisFSC)s,%(memory)s,%(interpolation)s
 %(outerRadius)s,%(innerRadius)s,%(sampling3DR)s,%(molMass)s,%(ampContrast)s,%(ThresholdMask)s,%(pseudoBFactor)s,%(avePhaseResidual)s,%(angStepSize)s,%(numberRandomSearch)s,%(numberPotentialMatches)s
@@ -1038,9 +1037,9 @@ eot
 
     def _prepareCommand(self):
         """ prepare the command to execute"""
-
-        if not exists(FREALIGN_PATH):
-            raise Exception('Missing ' + FREALIGN)
+        frealign = self._getProgram()
+        if not exists(frealign):
+            raise Exception('Missing ' + frealign)
         args = """%(frealign)s  << eot > %(logFile)s
 M,%(mode)s,%(doMagRefinement)s,%(doDefocusRef)s,%(doAstigRef)s,%(doDefocusPartRef)s,%(metEwaldSphere)s,%(doExtraRealSpaceSym)s,%(doWienerFilter)s,%(doBfactor)s,%(writeMatchProj)s,%(metFsc)s,%(doAditionalStatisFSC)s,%(memory)s,%(interpolation)s
 %(outerRadius)s,%(innerRadius)s,%(sampling3DR)s,%(molMass)s,%(ampContrast)s,%(ThresholdMask)s,%(pseudoBFactor)s,%(avePhaseResidual)s,%(angStepSize)s,%(numberRandomSearch)s,%(numberPotentialMatches)s
@@ -1199,7 +1198,6 @@ eot
         objId = self.micIdMap[micId]
 
         # get alignment parameters for each particle
-        from convert import geometryFromMatrix
         shifts, angles = geometryFromMatrix(img.getTransform().getMatrix())
         # TODO: check if can use shiftZ
         shiftXP, shiftYP, _ = shifts * img.getSamplingRate()

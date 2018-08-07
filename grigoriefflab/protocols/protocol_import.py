@@ -1,8 +1,8 @@
 # **************************************************************************
 # *
-# * Authors:     J.M. De la Rosa Trevin (jmdelarosa@cnb.csic.es)
+# * Authors:     J.M. De la Rosa Trevin (delarosatrevin@scilifelab.se) [1]
 # *
-# * Unidad de  Bioinformatica of Centro Nacional de Biotecnologia , CSIC
+# * [1] SciLifeLab, Stockholm University
 # *
 # * This program is free software; you can redistribute it and/or modify
 # * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ from pyworkflow.protocol.params import PathParam, PointerParam
 from pyworkflow.em.data import CTFModel
 from pyworkflow.em.protocol import ProtImportFiles, ProtCTFMicrographs
 
+from grigoriefflab.convert import parseCtffindOutput
 
 
 class ProtImportCTF(ProtImportFiles, ProtCTFMicrographs):
@@ -37,7 +38,7 @@ class ProtImportCTF(ProtImportFiles, ProtCTFMicrographs):
     contains the micrograph id in the name. """
     _label = 'import ctf'
     
-    #--------------------------- DEFINE param functions --------------------------------------------
+    # -------------------------- DEFINE param functions -----------------------
     def _defineParams(self, form):
         form.addSection('Input')
         form.addParam('inputMicrographs', PointerParam, pointerClass='SetOfMicrographs', 
@@ -49,13 +50,13 @@ class ProtImportCTF(ProtImportFiles, ProtCTFMicrographs):
                            'You should use #### characters in the pattern\n'
                            'to mark where the micrograph id will be taken from. ')
     
-    #--------------------------- INSERT steps functions --------------------------------------------
+    # --------------------------- INSERT steps functions ----------------------
     def _insertAllSteps(self):
         self._insertFunctionStep('importCtfStep', 
                                  self.inputMicrographs.get().getObjId(),
                                  self.getPattern())
     
-    #--------------------------- STEPS functions ---------------------------------------------------
+    # --------------------------- STEPS functions -----------------------------
     def importCtfStep(self, micsId, pattern):
         """ Copy movies matching the filename pattern
         Register other parameters.
@@ -71,11 +72,10 @@ class ProtImportCTF(ProtImportFiles, ProtCTFMicrographs):
             # this is set by the user by using #### format in the pattern
             match = self._idRegex.match(fn)
             if match is None:
-                raise Exception("File '%s' doesn't match the pattern '%s'" % (fn, self.pattern.get()))
+                raise Exception("File '%s' doesn't match the pattern '%s'"
+                                % (fn, self.pattern.get()))
             ctfId = int(match.group(1))
             ctfDict[ctfId] = fn
-            
-        from pyworkflow.em.packages.grigoriefflab.convert import parseCtffindOutput
 
         for mic in inputMics:
             if mic.getObjId() in ctfDict:

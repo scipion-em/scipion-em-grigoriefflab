@@ -159,14 +159,14 @@ class ProtCTFFind(pwem.ProtCTFMicrographs):
             self._params['ctffindOut'] = self._getCtfOutPath(micDir)
             self._params['ctffindPSD'] = self._getPsdPath(micDir)
 
-        except Exception, ex:
+        except Exception as ex:
             print >> sys.stderr, "Some error happened: %s" % ex
             import traceback
             traceback.print_exc()
 
         try:
             self.runJob(self._program, self._args % self._params)
-        except Exception, ex:
+        except Exception as ex:
             print >> sys.stderr, "ctffind has failed with micrograph %s" % micFnMrc
 
         # Let's notify that this micrograph have been processed
@@ -200,7 +200,7 @@ class ProtCTFFind(pwem.ProtCTFMicrographs):
         pwutils.cleanPath(psdFile)
         try:
             self.runJob(self._program, self._args % self._params)
-        except Exception, ex:
+        except Exception as ex:
             print >> sys.stderr, "ctffind has failed with micrograph %s" % micFnMrc
         pwutils.cleanPattern(micFnMrc)
 

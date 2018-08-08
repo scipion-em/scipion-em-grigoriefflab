@@ -25,12 +25,10 @@
 # **************************************************************************
 
 from pyworkflow.tests import *
-from pyworkflow.em.protocol import (ProtImportMovies,
-                                    ProtImportMicrographs,
+from pyworkflow.em.protocol import (ProtImportMovies, ProtImportMicrographs,
                                     ProtImportCoordinates)
-from pyworkflow.em.packages.grigoriefflab import (ProtMagDistEst,
-                                                  ProtMagDistCorr,
-                                                  ProtMagDistCorrCoord)
+from grigoriefflab.protocols import (ProtMagDistEst, ProtMagDistCorr,
+                                     ProtMagDistCorrCoord)
 
 
 # Some utility functions to import files that are used in several tests.

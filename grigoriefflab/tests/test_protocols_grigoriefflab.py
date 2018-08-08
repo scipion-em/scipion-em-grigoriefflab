@@ -26,8 +26,10 @@
 
 from pyworkflow.em import *
 from pyworkflow.tests import *
-from pyworkflow.em.packages.grigoriefflab import *
 from pyworkflow.em.protocol import ProtImportParticles, ProtImportVolumes
+
+from grigoriefflab import *
+from grigoriefflab.protocols import *
 
 
 class TestBrandeisBase(BaseTest):

@@ -28,16 +28,16 @@
 import os
 import sys
 import pyworkflow.utils as pwutils
-import pyworkflow.em as em
+import pyworkflow.em as pwem
 import pyworkflow.protocol.params as params
 
 import grigoriefflab
-from grigoriefflab.constants import (V4_0_15, V4_1_10)
+from grigoriefflab.constants import (V4_0_15, V4_1_10, CTFFIND, CTFFIND4)
 from grigoriefflab.convert import (readCtfModel, parseCtffindOutput,
                                    parseCtffind4Output)
 
 
-class ProtCTFFind(em.ProtCTFMicrographs):
+class ProtCTFFind(pwem.ProtCTFMicrographs):
     """
     Estimates CTF on a set of micrographs
     using either ctffind3 or ctffind4 program.
@@ -57,15 +57,16 @@ class ProtCTFFind(em.ProtCTFMicrographs):
         """
         missingPaths = []
 
-        if not os.path.exists(CTFFIND4_PATH) \
-                and not os.path.exists(CTFFIND_PATH):
-            missingPaths.append("%s, %s : ctffind installation not found"
-                                " - %s or %s" % (CTFFIND_HOME, CTFFIND4_HOME,
-                                                 CTFFIND_PATH, CTFFIND4_PATH))
+        # FIXME
+        # if not os.path.exists(CTFFIND4_PATH) \
+        #         and not os.path.exists(CTFFIND_PATH):
+        #     missingPaths.append("%s, %s : ctffind installation not found"
+        #                         " - %s or %s" % (CTFFIND_HOME, CTFFIND4_HOME,
+        #                                          CTFFIND_PATH, CTFFIND4_PATH))
         return missingPaths
 
     def _defineParams(self, form):
-        em.ProtCTFMicrographs._defineParams(self, form)
+        pwem.ProtCTFMicrographs._defineParams(self, form)
         # Define the streaming parameters at the end
         self._defineStreamingParams(form)
 
@@ -142,16 +143,13 @@ class ProtCTFFind(em.ProtCTFMicrographs):
             if downFactor != 1:
                 # Replace extension by 'mrc' because there are some formats
                 # that cannot be written (such as dm3)
-                import pyworkflow.em.packages.xmipp3 as xmipp3
-                args = "-i %s -o %s --step %f --method fourier" % (micFn, micFnMrc, downFactor)
-                self.runJob("xmipp_transform_downsample",
-                            args, env=xmipp3.getEnviron())
-                self._params['scannedPixelSize'] =  scannedPixelSize * downFactor
+                pwem.ImageHandler().scaleFourier(micFn, micFnMrc, downFactor)
+                self._params['scannedPixelSize'] = scannedPixelSize * downFactor
             else:
-                ih = em.ImageHandler()
+                ih = pwem.ImageHandler()
                 if ih.existsLocation(micFn):
                     micFnMrc = self._getTmpPath(pwutils.replaceBaseExt(micFn, "mrc"))
-                    ih.convert(micFn, micFnMrc, em.DT_FLOAT)
+                    ih.convert(micFn, micFnMrc, pwem.DT_FLOAT)
                 else:
                     print >> sys.stderr, "Missing input micrograph %s" % micFn
 
@@ -190,7 +188,7 @@ class ProtCTFFind(em.ProtCTFMicrographs):
 
         pwutils.cleanPath(out)
         micFnMrc = self._getTmpPath(pwutils.replaceBaseExt(micFn, "mrc"))
-        em.ImageHandler().convert(micFn, micFnMrc, em.DT_FLOAT)
+        pwem.ImageHandler().convert(micFn, micFnMrc, pwem.DT_FLOAT)
 
         # Update _params dictionary
         self._prepareRecalCommand(ctfModel)
@@ -218,7 +216,7 @@ class ProtCTFFind(em.ProtCTFMicrographs):
         out = self._getCtfOutPath(micDir)
         psdFile = self._getPsdPath(micDir)
 
-        ctfModel = em.CTFModel()
+        ctfModel = pwem.CTFModel()
         readCtfModel(ctfModel, out, ctf4=self.useCtffind4.get())
         ctfModel.setPsdFile(psdFile)
         ctfModel.setMicrograph(mic)
@@ -231,10 +229,7 @@ class ProtCTFFind(em.ProtCTFMicrographs):
     # -------------------------- INFO functions -------------------------------
     def _validate(self):
         errors = []
-        thr = self.numberOfThreads.get()
-        ctffind = CTFFIND4_PATH if self.useCtffind4 else CTFFIND_PATH
-        if thr > 1 and not self.useCtffind4:
-            ctffind = CTFFINDMP_PATH
+        ctffind = self._getProgram()
         if not os.path.exists(ctffind):
             errors.append('Missing %s' % ctffind)
 
@@ -265,8 +260,16 @@ class ProtCTFFind(em.ProtCTFMicrographs):
         return [methods]
 
     # -------------------------- UTILS functions ------------------------------
+    def _getVersionCtffind4(self):
+        return grigoriefflab.Plugin.getActiveVersion(CTFFIND4)
+
     def _isNewCtffind4(self):
-        return self.useCtffind4 and getVersion('CTFFIND4') != V4_0_15
+        return self.useCtffind4 and self._getVersionCtffind4() != V4_0_15
+
+    def _getProgram(self):
+        binaryKey = CTFFIND4 if self.useCtffind4 else CTFFIND
+        useMP = self.numberOfThreads > 1 and not self.useCtffind4
+        return grigoriefflab.Plugin.getProgram(binaryKey, useMP=useMP)
 
     def _prepareCommand(self):
         sampling = self.inputMics.getSamplingRate() * self.ctfDownFactor.get()
@@ -302,7 +305,7 @@ class ProtCTFFind(em.ProtCTFMicrographs):
         # get the size and the image of psd
 
         imgPsd = ctfModel.getPsdFile()
-        imgh = em.ImageHandler()
+        imgh = pwem.ImageHandler()
         size, _, _, _ = imgh.getDimensions(imgPsd)
 
         mic = ctfModel.getMicrograph()
@@ -337,9 +340,8 @@ class ProtCTFFind(em.ProtCTFMicrographs):
     def _argsCtffind3(self):
         self._program = 'export NATIVEMTZ=kk ; '
         if self.numberOfThreads.get() > 1:
-            self._program += 'export NCPUS=%d ;' % self.numberOfThreads.get() + CTFFINDMP_PATH
-        else:
-            self._program += CTFFIND_PATH
+            self._program += 'export NCPUS=1 ;'
+        self._program += self._getProgram()
         self._args = """   << eof > %(ctffindOut)s
 %(micFn)s
 %(ctffindPSD)s
@@ -353,7 +355,7 @@ eof
         # Avoid threads multiplication
         # self._program = 'export OMP_NUM_THREADS=%d; ' % self.numberOfThreads.get()
         self._program = 'export OMP_NUM_THREADS=1; '
-        self._program += CTFFIND4_PATH
+        self._program += self._getProgram()
         self._args = """ << eof
 %(micFn)s
 %(ctffindPSD)s
@@ -368,7 +370,7 @@ eof
 %(maxDefocus)f
 %(step_focus)f"""
 
-        if getVersion(CTFFIND4) in ['4.1.5', '4.1.8', V4_1_10]:
+        if self._getVersionCtffind4() in ['4.1.5', '4.1.8', V4_1_10]:
             if self.findPhaseShift:
                 self._args += """
 no
@@ -394,7 +396,7 @@ yes
 %(resamplePix)s
 eof
 """
-        elif getVersion(CTFFIND4) == V4_0_15:
+        elif self._getVersionCtffind4() == V4_0_15:
             if self.findPhaseShift:
                 self._args += """
 %(astigmatism)f
@@ -427,15 +429,15 @@ eof
             return parseCtffind4Output(filename)
 
     def _getCTFModel(self, defocusU, defocusV, defocusAngle, psdFile):
-        ctf = em.CTFModel()
+        ctf = pwem.CTFModel()
         ctf.setStandardDefocus(defocusU, defocusV, defocusAngle)
         ctf.setPsdFile(psdFile)
 
         return ctf
 
     def _summary(self):
-        summary = em.ProtCTFMicrographs._summary(self)
-        if self.useCtffind4 and getVersion('CTFFIND4') == '4.1.5':
+        summary = pwem.ProtCTFMicrographs._summary(self)
+        if self.useCtffind4 and self._getVersionCtffind4() == '4.1.5':
             summary.append("NOTE: ctffind4.1.5 finishes correctly (all output "
                            "is generated properly), but returns an error code. "
                            "Disregard error messages until this is fixed."

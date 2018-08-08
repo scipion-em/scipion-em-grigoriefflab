@@ -27,7 +27,9 @@
 
 from pyworkflow.em import *
 from pyworkflow.tests import *
-from pyworkflow.em.packages.grigoriefflab import *
+
+from grigoriefflab import *
+from grigoriefflab.protocols import *
 
 
 # Some utility functions to import movies that are used in several tests.

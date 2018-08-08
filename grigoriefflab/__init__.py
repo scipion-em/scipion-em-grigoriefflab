@@ -34,19 +34,18 @@ from .constants import *
 _logo = "brandeis_logo.png"
 
 
-def _getHome(binaryKey, default, homeKey=None, *paths):
+def _getHome(binaryKey, default, paths):
     """ Get the required home path, if not present..
     the default value will be used from EM_ROOT.
     Can join extra paths
     """
-    homeKey = homeKey or '%s_HOME' % binaryKey
-    home = os.environ.get(homeKey,
+    home = os.environ.get('%s_HOME' % binaryKey,
                           os.path.join(os.environ['EM_ROOT'], default))
     return os.path.join(home, *paths)
 
 
 def _getCtffind4Paths():
-    if os.path.exists(_getHome(CTFFIND4, 'ctffind4', 'bin', CTFFIND4_BIN)):
+    if os.path.exists(_getHome(CTFFIND4, 'ctffind4', ['bin', CTFFIND4_BIN])):
         return ['bin']
     return []
 
@@ -121,12 +120,12 @@ class Plugin(pyworkflow.em.Plugin):
 
         program = entry[programKey][1 if useMP else 0]
         paths = entry.get('PATH', []) + [program]
-        return _getHome(binaryKey, entry['DEFAULT'], *paths)
+        return _getHome(binaryKey, entry['DEFAULT'], paths)
 
     @classmethod
     def getHome(cls, binaryKey=FREALIGN):
         entry = cls.__getEntry(binaryKey)
-        return _getHome(binaryKey, entry['DEFAULT'], *entry.get('PATH', []))
+        return _getHome(binaryKey, entry['DEFAULT'], entry.get('PATH', []))
 
     @classmethod
     def getSupportedVersions(cls, binaryKey=FREALIGN):

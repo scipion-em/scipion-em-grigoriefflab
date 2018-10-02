@@ -26,9 +26,10 @@
 """
 This module contains the protocol to obtain a refined 3D reconstruction from a set of particles using Frealign
 """
-
+from os.path import exists
 import pyworkflow.em as em 
 from protocol_frealign_base import ProtFrealignBase
+from grigoriefflab.convert import rowToAlignment, FrealignParFile
 
 
 class ProtFrealign(ProtFrealignBase, em.ProtRefine3D):
@@ -75,7 +76,6 @@ reconstructions.
     
     #--------------------------- UTILS functions ------------------------
     def _getIterData(self, it):
-        from os.path import exists
         data_sqlite = self._getFileName('data_scipion', iter=it)
         if not exists(data_sqlite):
             iterImgSet = em.SetOfParticles(filename=data_sqlite)
@@ -87,8 +87,6 @@ reconstructions.
         return data_sqlite
     
     def _fillDataFromIter(self, imgSet, iterN):
-        from convert import FrealignParFile
-        
         parFn = self._getFileName('output_par', iter=iterN)
         initPartSet = self._getInputParticles()
         imgSet.setAlignmentProj()
@@ -100,5 +98,4 @@ reconstructions.
                          itemDataIterator=iterParFile)
         
     def _createItemMatrix(self, item, row):
-        from convert import rowToAlignment
         item.setTransform(rowToAlignment(row, item.getSamplingRate()))

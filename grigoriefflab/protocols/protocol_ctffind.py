@@ -31,7 +31,7 @@ import pyworkflow.utils as pwutils
 import pyworkflow.em as pwem
 import pyworkflow.protocol.params as params
 
-import grigoriefflab
+from grigoriefflab import Plugin
 from grigoriefflab.constants import (V4_0_15, V4_1_10, CTFFIND, CTFFIND4)
 from grigoriefflab.convert import (readCtfModel, parseCtffindOutput,
                                    parseCtffind4Output)
@@ -261,7 +261,7 @@ class ProtCTFFind(pwem.ProtCTFMicrographs):
 
     # -------------------------- UTILS functions ------------------------------
     def _getVersionCtffind4(self):
-        return grigoriefflab.Plugin.getActiveVersion(CTFFIND4)
+        return Plugin.getActiveVersion(CTFFIND4)
 
     def _isNewCtffind4(self):
         return self.useCtffind4 and self._getVersionCtffind4() != V4_0_15
@@ -269,7 +269,7 @@ class ProtCTFFind(pwem.ProtCTFMicrographs):
     def _getProgram(self):
         binaryKey = CTFFIND4 if self.useCtffind4 else CTFFIND
         useMP = self.numberOfThreads > 1 and not self.useCtffind4
-        return grigoriefflab.Plugin.getProgram(binaryKey, useMP=useMP)
+        return Plugin.getProgram(binaryKey, useMP=useMP)
 
     def _prepareCommand(self):
         sampling = self.inputMics.getSamplingRate() * self.ctfDownFactor.get()

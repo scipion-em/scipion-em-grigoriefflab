@@ -35,8 +35,9 @@ import pyworkflow.protocol.params as params
 from pyworkflow.gui.plotter import Plotter
 from xmipp3.convert import writeShiftsMovieAlignment
 
-import grigoriefflab
+from grigoriefflab import Plugin
 from grigoriefflab.convert import readShiftsMovieAlignment
+from grigoriefflab.constants import UNBLUR
 
 
 class ProtUnblur(ProtAlignMovies):
@@ -279,10 +280,10 @@ class ProtUnblur(ProtAlignMovies):
 
     #--------------------------- UTILS functions -------------------------------
     def _getProgram(self):
-        return grigoriefflab.Plugin.getProgram(UNBLUR)
+        return Plugin.getProgram(UNBLUR)
 
     def _getVersion(self):
-        return grigoriefflab.Plugin.getActiveVersion(UNBLUR)
+        return Plugin.getActiveVersion(UNBLUR)
 
     def _isNewUnblur(self):
         return self._getVersion() != '1.0.150529'
@@ -315,7 +316,8 @@ class ProtUnblur(ProtAlignMovies):
         self._program += self._getProgram()
 
         if self._isNewUnblur():
-            args['preExposureAmount'] = movie.getAcquisition().getDoseInitial() or 0.0
+            args['preExposureAmount'] = movie.getAcquisition().getDoseInitial() \
+                                        or 0.0
             self._args = """ << eof
 %(movieName)s
 %(numberOfFramesPerMovie)s

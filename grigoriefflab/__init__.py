@@ -25,10 +25,9 @@
 # **************************************************************************
 
 import os
-
 import pyworkflow.em
-
-from .constants import *
+from pyworkflow.utils import Environ
+from grigoriefflab.constants import *
 
 
 _logo = "brandeis_logo.png"
@@ -57,6 +56,11 @@ class Plugin(pyworkflow.em.Plugin):
         CTFFIND: {
             'DEFAULT': 'ctffind',
             '': [CTFFIND_BIN, CTFFINDMP_BIN],  # default program, 1 or 2 exec
+            CTFTILT: [CTFTILT_BIN, CTFTILTMP_BIN]
+        },
+        CTFTILT: {
+            'DEFAULT': 'ctffind',
+            '': [CTFTILT_BIN, CTFTILTMP_BIN],  # default program, 1 or 2 exec
             CTFTILT: [CTFTILT_BIN, CTFTILTMP_BIN]
         },
         CTFFIND4: {
@@ -97,7 +101,7 @@ class Plugin(pyworkflow.em.Plugin):
         entry = cls.__programs.get(binaryKey, None)
 
         if entry is None:
-            raise Exception("Binaries for '%S' not found. " % binaryKey)
+            raise Exception("Binaries for '%s' not found. " % binaryKey)
 
         return entry
 
@@ -142,6 +146,43 @@ class Plugin(pyworkflow.em.Plugin):
             if v in home:
                 return v
         return ''
+
+    @classmethod
+    def defineBinaries(cls, env):
+        env.addPackage('ctffind', version='3.6',
+                       tar='ctffind_V3.5.tgz',
+                       default=True)
+
+        env.addPackage('ctffind4', version='4.0.15',
+                       tar='ctffind_V4.0.15.tgz')
+
+        env.addPackage('ctffind4', version='4.1.5',
+                       tar='ctffind_V4.1.5.tgz')
+
+        env.addPackage('ctffind4', version='4.1.8',
+                       tar='ctffind_V4.1.8.tgz')
+
+        env.addPackage('ctffind4', version='4.1.10',
+                       tar='ctffind4-4.1.10.tgz',
+                       default=True)
+
+        env.addPackage('summovie', version='1.0.2',
+                       tar='summovie_1.0.2.tgz',
+                       default=True)
+
+        env.addPackage('unblur', version='1.0.15',
+                       tar='unblur_1.0_150529.tgz')
+
+        env.addPackage('unblur', version='1.0.2',
+                       tar='unblur_1.0.2.tgz',
+                       default=True)
+        env.addPackage('frealign', version='9.07',
+                       tar='frealign_v9.07.tgz',
+                       default=True)
+
+        env.addPackage('mag_distortion', version='1.0.1',
+                       tar='mag_distortion-1.0.1.tgz',
+                       default=True)
 
 
 pyworkflow.em.Domain.registerPlugin(__name__)

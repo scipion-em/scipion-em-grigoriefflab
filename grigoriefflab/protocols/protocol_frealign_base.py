@@ -37,7 +37,7 @@ from pyworkflow.protocol.params import (StringParam, BooleanParam, IntParam,
 from pyworkflow.em.protocol import EMProtocol
 from pyworkflow.em.convert import ImageHandler
 
-import grigoriefflab
+from grigoriefflab import Plugin
 from grigoriefflab.convert import geometryFromMatrix
 from grigoriefflab.constants import *
 
@@ -781,7 +781,7 @@ class ProtFrealignBase(EMProtocol):
 
     #--------------------------- UTILS functions -------------------------------
     def _getProgram(self, useMP=False):
-        return grigoriefflab.Plugin.getProgram(FREALIGN, useMP=useMP)
+        return Plugin.getProgram(FREALIGN, useMP=useMP)
 
     def _getParamsIteration(self, iterN):
         """ Defining the current iteration """

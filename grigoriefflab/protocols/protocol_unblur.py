@@ -33,8 +33,7 @@ from pyworkflow.em.data import MovieAlignment
 from pyworkflow.em.protocol import ProtAlignMovies
 import pyworkflow.protocol.params as params
 from pyworkflow.gui.plotter import Plotter
-from xmipp3.convert import writeShiftsMovieAlignment
-
+writeShiftsMovieAlignment = pwutils.importFromPlugin('xmipp3.convert', 'writeShiftsMovieAlignment')
 from grigoriefflab import Plugin
 from grigoriefflab.convert import readShiftsMovieAlignment
 from grigoriefflab.constants import UNBLUR

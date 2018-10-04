@@ -35,7 +35,7 @@ import pyworkflow.utils.path as pwutils
 from pyworkflow.em.protocol import ProtProcessMovies
 from pyworkflow.em.data import SetOfMovies
 
-import grigoriefflab
+from grigoriefflab import Plugin
 from grigoriefflab.constants import MAGDIST, MAGDISTCORR
 from grigoriefflab.convert import parseMagCorrInput
 
@@ -274,7 +274,7 @@ class ProtMagDistCorr(ProtProcessMovies):
 
     # --------------------------- UTILS functions ------------------------------
     def _getProgram(self):
-        return grigoriefflab.Plugin.getProgram(MAGDIST, MAGDISTCORR)
+        return Plugin.getProgram(MAGDIST, MAGDISTCORR)
 
     def getOutputLog(self, movie):
         return 'micrograph_%06d_Log.txt' % movie.getObjId()

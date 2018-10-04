@@ -31,7 +31,7 @@ import pyworkflow.em as em
 import pyworkflow.protocol.params as params
 from pyworkflow import VERSION_1_2
 
-import grigoriefflab
+from grigoriefflab import Plugin
 from grigoriefflab.constants import (CTFFIND, CTFTILT)
 from grigoriefflab.convert import readCtfModel, parseCtftiltOutput
 
@@ -96,10 +96,10 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
             if downFactor != 1:
                 # Replace extension by 'mrc' because there are some formats
                 # that cannot be written (such as dm3)
-                import xmipp3
                 args = "-i %s -o %s --step %f --method fourier" % (micFn, micFnMrc, downFactor)
+                xmippPlugin = pwutils.importFromPlugin('xmipp3', 'Plugin')
                 self.runJob("xmipp_transform_downsample",
-                            args, env=xmipp3.getEnviron())
+                            args, env=xmippPlugin.getEnviron())
                 self._params['scannedPixelSize'] = scannedPixelSize * downFactor
             else:
                 ih = em.ImageHandler()
@@ -206,8 +206,8 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
 
     # -------------------------- UTILS functions ------------------------------
     def _getProgram(self):
-        return grigoriefflab.Plugin.getProgram(CTFFIND, CTFTILT,
-                                               useMP=self.numberOfThreads > 1)
+         return Plugin.getProgram(CTFFIND, CTFTILT,
+                                 useMP=self.numberOfThreads > 1)
 
     def _prepareCommand(self):
         sampling = self.inputMics.getSamplingRate() * self.ctfDownFactor.get()
@@ -253,12 +253,14 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
     def _useThreads(self):
         return self.numberOfThreads > 1
 
-    def _getProgram(self):
-        return grigoriefflab.Plugin.getProgram(CTFTILT, useMP=self._useThreads())
+    # def _getProgram(self):
+    #     return Plugin.getProgram(CTFTILT, useMP=self._useThreads())
+
     def _argsCtftilt(self):
-        self._program = ('export NATIVEMTZ=kk ; %s %s' %
-                         ('export NCPUS=%d ;' if self._useThreads() else '',
-                          self._getProgram()))
+        self._program = 'export NATIVEMTZ=kk ; '
+        if self._useThreads():
+            self._program += 'export NCPUS= %d ;' % self.numberOfThreads
+        self._program += self._getProgram()
         self._args = """   << eof > %(ctftiltOut)s
 %(micFn)s
 %(ctftiltPSD)s

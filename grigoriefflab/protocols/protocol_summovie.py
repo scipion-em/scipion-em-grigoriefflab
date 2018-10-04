@@ -31,7 +31,7 @@ import pyworkflow.protocol.constants as cons
 import pyworkflow.utils.path as pwutils
 from pyworkflow.em.protocol import ProtAlignMovies, ProtProcessMovies
 
-import grigoriefflab
+from grigoriefflab import Plugin
 from grigoriefflab.constants import SUMMOVIE
 from grigoriefflab.convert import writeShiftsMovieAlignment
 
@@ -207,7 +207,7 @@ class ProtSummovie(ProtAlignMovies):
     
     # -------------------------- UTILS functions ------------------------------
     def _getProgram(self):
-        return grigoriefflab.Plugin.getProgram(SUMMOVIE)
+        return Plugin.getProgram(SUMMOVIE)
 
     def _argsSummovie(self):
 

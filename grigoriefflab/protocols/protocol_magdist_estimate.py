@@ -32,7 +32,9 @@ import pyworkflow.utils.path as pwutils
 from pyworkflow import VERSION_1_1
 from pyworkflow.em.protocol import ProtPreprocessMicrographs
 
+from grigoriefflab import Plugin
 from grigoriefflab.convert import parseMagEstOutput
+from grigoriefflab.constants import MAGDIST, MAGDISTEST, MAGDISTEST_BIN
 
 
 class ProtMagDistEst(ProtPreprocessMicrographs):
@@ -175,17 +177,26 @@ class ProtMagDistEst(ProtPreprocessMicrographs):
     # --------------------------- INFO functions -------------------------------
 
     def _validate(self):
+
+        # Check that the program exists
         errors = []
         # Check that the program exists
-        magdistest = grigoriefflab.Plugin.getProgram()
-        if not exists(MAGDISTEST_PATH):
-            errors.append("Binary '%s' does not exits.\n"
-                          "Check configuration file: \n"
-                          "~/.config/scipion/scipion.conf\n"
-                          "and set MAGDIST_HOME variable properly."
-                          % MAGDISTEST_PATH)
+        magdistest = Plugin.getProgram(MAGDIST, MAGDISTEST)
+
+        if not exists(magdistest):
+            errors.append('Missing %s' % magdistest)
 
         return errors
+
+        # magdistest = Plugin.getProgram()
+        # if not exists(MAGDISTEST_PATH):
+        #     errors.append("Binary '%s' does not exits.\n"
+        #                   "Check configuration file: \n"
+        #                   "~/.config/scipion/scipion.conf\n"
+        #                   "and set MAGDIST_HOME variable properly."
+        #                   % MAGDISTEST_PATH)
+        #
+        # return errors
 
     def _citations(self):
         return ["Grant2015"]
@@ -228,7 +239,8 @@ class ProtMagDistEst(ProtPreprocessMicrographs):
         return parseMagEstOutput(fnOut)
 
     def _argsMagDistEst(self):
-        self._program = 'export NCPUS=%(nthr)d ; ' + MAGDISTEST_PATH
+        self._program = 'export NCPUS=%(nthr)d ; '
+        self._program += Plugin.getProgram(MAGDIST, MAGDISTEST)
         self._args = """   << eof > %(logFn)s
 %(stackFnMrc)s
 %(spectraFn)s

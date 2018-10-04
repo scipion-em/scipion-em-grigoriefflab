@@ -32,9 +32,10 @@ from pyworkflow.utils import copyFile
 import pyworkflow.em as em
 from pyworkflow.em.data import Volume
 
-import grigoriefflab
+from grigoriefflab import Plugin
 from grigoriefflab.convert import rowToAlignment, OrderedDict, HEADER_COLUMNS
 from grigoriefflab.protocols import ProtFrealignBase
+from grigoriefflab.constants import FREALIGN, RSAMPLE, CALC_OCC
 
 
 class ProtFrealignClassify(ProtFrealignBase, em.ProtClassify3D):
@@ -202,7 +203,7 @@ marginal likelihood.
         iterDir = self._iterWorkingDir(iterN)
         
         os.environ['NCPUS'] = str(self.cpuList[ref-1])
-        paramsDic['frealign'] = grigoriefflab.Plugin.getProgram(FREALIGN, useMP=True)
+        paramsDic['frealign'] = Plugin.getProgram(FREALIGN, useMP=True)
         paramsDic['outputParFn'] = self._getBaseName('output_vol_par_class', iter=iterN, ref=ref)
         paramsDic['initParticle'] = initParticle
         paramsDic['finalParticle'] = finalParticle
@@ -217,6 +218,7 @@ marginal likelihood.
         self.runJob('', args % params3DR, cwd=iterDir)
     
     def calculateOCCStep(self, iterN, isLastIterStep):
+
         imgSet = self._getInputParticles()
         numberOfClasses = self.numberOfRef
         cpusRef = self._cpusPerClass(self.numberOfBlocks, numberOfClasses)
@@ -228,7 +230,7 @@ marginal likelihood.
             samplingRate = imgSet.getSamplingRate()
             rootFn = self._getBaseName('output_par_class_tmp', iter=iterN)
             args  = self._rsampleCommand()
-            program = grigoriefflab.Plugin.getProgram(FREALIGN, RSAMPLE)
+            program = Plugin.getProgram(FREALIGN, RSAMPLE)
         else:
             args = self._occCommand()
             tmp = ''
@@ -238,7 +240,7 @@ marginal likelihood.
                 args += '%s\n' % self._getBaseName('output_par_class', iter=iterN, ref=ref)
                 tmp += '%s\n' % self._getBaseName('output_par_class', iter=iterN, ref=ref)
             args = args + tmp + 'eot'
-            program = grigoriefflab.Plugin.getProgram(FREALIGN, CALC_OCC_PATH)
+            program = Plugin.getProgram(FREALIGN, CALC_OCC)
 
         self.runJob(program, args % locals(), cwd=iterDir)
         

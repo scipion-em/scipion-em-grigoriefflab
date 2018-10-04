@@ -279,7 +279,7 @@ class TestBrandeisCtftilt(TestBrandeisBase):
                                    numberOfThreads=4)
         protCTF.inputMicrographs.set(self.protImport.outputMicrographs)
         self.proj.launchProtocol(protCTF, wait=True)
-        self.assertIsNotNone(protCTF.outputCTF, "SetOfCTF has not been produced.")
+        self.assertSetSize(protCTF.outputCTF, 1, "SetOfCTF has not been produced.")
 
         values = [14366, 12784, 21, 43.0]
         for ctfModel in protCTF.outputCTF:

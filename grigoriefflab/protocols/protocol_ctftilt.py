@@ -259,7 +259,7 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
     def _argsCtftilt(self):
         self._program = 'export NATIVEMTZ=kk ; '
         if self._useThreads():
-            self._program += 'export NCPUS= %d ;' % self.numberOfThreads
+            self._program += 'export NCPUS=%d ;' % self.numberOfThreads
         self._program += self._getProgram()
         self._args = """   << eof > %(ctftiltOut)s
 %(micFn)s

@@ -144,7 +144,7 @@ class ProtSummovie(ProtAlignMovies):
     
     # -------------------------- INFO functions -------------------------------
     def _citations(self):
-        return ["Grant2015.2"]
+        return ["Grant2015b"]
         
     def _methods(self):
         return []

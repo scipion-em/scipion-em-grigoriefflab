@@ -30,7 +30,7 @@ from pyworkflow.utils import Environ
 from grigoriefflab.constants import *
 
 
-_logo = "brandeis_logo.png"
+_logo = "grigoriefflab_logo.png"
 
 
 def _getHome(binaryKey, default, paths):

@@ -38,7 +38,7 @@ class ProtMagDistCorrCoord(EMProtocol):
     distortion using previously estimated parameters.
     It works on a set of coordinates.
     """
-    _label = 'mag distortion correction (coords)'
+    _label = 'mag distortion correct (coords)'
     _lastUpdateVersion = VERSION_1_1
 
     @classmethod

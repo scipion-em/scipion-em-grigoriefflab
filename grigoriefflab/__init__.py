@@ -27,10 +27,11 @@
 import os
 import pyworkflow.em
 from pyworkflow.utils import Environ
-from grigoriefflab.constants import *
+from .constants import *
 
 
 _logo = "grigoriefflab_logo.png"
+_references = ['Mindell2003']  # FIXME: citations do not work if this is empty
 
 
 def _getHome(binaryKey, default, paths):
@@ -44,7 +45,7 @@ def _getHome(binaryKey, default, paths):
 
 
 def _getCtffind4Paths():
-    if os.path.exists(_getHome(CTFFIND4, 'ctffind4', ['bin', CTFFIND4_BIN])):
+    if os.path.exists(_getHome(CTFFIND4, 'ctffind4-4.1.10', ['bin', CTFFIND4_BIN])):
         return ['bin']
     return []
 
@@ -54,23 +55,23 @@ def _getCtffind4Paths():
 class Plugin(pyworkflow.em.Plugin):
     __programs = {
         CTFFIND: {
-            'DEFAULT': 'ctffind',
+            'DEFAULT': 'ctffind-3.6',
             '': [CTFFIND_BIN, CTFFINDMP_BIN],  # default program, 1 or 2 exec
             CTFTILT: [CTFTILT_BIN, CTFTILTMP_BIN]
         },
         CTFTILT: {
-            'DEFAULT': 'ctffind',
+            'DEFAULT': 'ctffind-3.6',
             '': [CTFTILT_BIN, CTFTILTMP_BIN],  # default program, 1 or 2 exec
             CTFTILT: [CTFTILT_BIN, CTFTILTMP_BIN]
         },
         CTFFIND4: {
-            'DEFAULT': 'ctffind4',
+            'DEFAULT': 'ctffind4-4.1.10',
             'PATH': _getCtffind4Paths(),  # variable path, depending on 'bin'
             '': [CTFFIND4_BIN],
             'VERSIONS': ['4.0.15', '4.1.5', '4.1.8', V4_1_10]
         },
         FREALIGN: {
-            'DEFAULT': 'frealign',
+            'DEFAULT': 'frealign-9.07',
             'PATH': ['bin'],
             '': [FREALIGN_BIN, FREALIGNMP_BIN],
             CALC_OCC: [CALC_OCC_BIN],
@@ -78,19 +79,19 @@ class Plugin(pyworkflow.em.Plugin):
             'VERSIONS': ['9.07']
         },
         MAGDIST: {
-            'DEFAULT': 'mag_distortion',
+            'DEFAULT': 'mag_distortion-1.0.1',
             'PATH': ['bin'],
             MAGDISTEST: [MAGDISTEST_BIN],
             MAGDISTCORR: [MAGDISTCORR_BIN]
         },
         UNBLUR: {
-            'DEFAULT': 'unblur',
+            'DEFAULT': 'unblur-1.0.2',
             'PATH': ['bin'],
             '': [UNBLUR_BIN],
             'VERSIONS': ['1.0_150529', '1.0.2']
         },
         SUMMOVIE: {
-            'DEFAULT': 'summovie',
+            'DEFAULT': 'summovie-1.0.2',
             'PATH': ['bin'],
             '': [SUMMOVIE_BIN]
         }
@@ -120,7 +121,7 @@ class Plugin(pyworkflow.em.Plugin):
         n = len(entry[programKey])
 
         if n < 1 or (useMP and n != 2):
-            raise Exception("Wrong number of binaries or not support for MP.")
+            raise Exception("Wrong number of binaries or no support for MP.")
 
         program = entry[programKey][1 if useMP else 0]
         paths = entry.get('PATH', []) + [program]

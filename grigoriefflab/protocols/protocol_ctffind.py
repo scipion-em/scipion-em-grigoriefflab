@@ -229,9 +229,6 @@ class ProtCTFFind(pwem.ProtCTFMicrographs):
     # -------------------------- INFO functions -------------------------------
     def _validate(self):
         errors = []
-        ctffind = self._getProgram()
-        if not os.path.exists(ctffind):
-            errors.append('Missing %s' % ctffind)
 
         valueStep = round(self.stepPhaseShift.get(), 2)
         valueMin = round(self.minPhaseShift.get(), 2)

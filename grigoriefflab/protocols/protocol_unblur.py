@@ -249,10 +249,12 @@ class ProtUnblur(ProtAlignMovies):
                                           movie))
         except:
             print("ERROR: Movie %s failed\n" % movie.getFileName())
+            import traceback
+            traceback.print_exc()
 
     # --------------------------- INFO functions -------------------------------
     def _citations(self):
-        return ['Campbell2012', 'Grant2015b']
+        return ["Campbell2012", "Grant2015b"]
 
     def _summary(self):
         return []

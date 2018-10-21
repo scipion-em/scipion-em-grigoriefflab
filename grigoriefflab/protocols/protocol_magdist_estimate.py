@@ -42,7 +42,7 @@ class ProtMagDistEst(ProtPreprocessMicrographs):
     distortion from a set of images of a standard gold shadowed diffraction
     grating
     """    
-    _label = 'magnification distortion estimation'
+    _label = 'mag distortion estimate'
     _lastUpdateVersion = VERSION_1_1
 
     @classmethod

@@ -96,10 +96,7 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
             if downFactor != 1:
                 # Replace extension by 'mrc' because there are some formats
                 # that cannot be written (such as dm3)
-                args = "-i %s -o %s --step %f --method fourier" % (micFn, micFnMrc, downFactor)
-                xmippPlugin = pwutils.importFromPlugin('xmipp3', 'Plugin')
-                self.runJob("xmipp_transform_downsample",
-                            args, env=xmippPlugin.getEnviron())
+                em.ImageHandler().scaleFourier(micFn, micFnMrc, downFactor)
                 self._params['scannedPixelSize'] = scannedPixelSize * downFactor
             else:
                 ih = em.ImageHandler()

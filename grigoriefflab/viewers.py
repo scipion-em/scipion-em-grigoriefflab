@@ -29,12 +29,11 @@ from os.path import exists, relpath
 from pyworkflow.utils import cleanPath, removeExt
 from pyworkflow.viewer import (Viewer, ProtocolViewer,
                                DESKTOP_TKINTER, WEB_DJANGO)
-from pyworkflow.em.viewer import DataView, CtfView
-import pyworkflow.em.showj as showj
+from pyworkflow.em.viewers import DataView, CtfView, EmPlotter
+import pyworkflow.em.viewers.showj as showj
 import pyworkflow.em as em
 
 from pyworkflow.gui.project import ProjectWindow
-from pyworkflow.em.plotter import EmPlotter
 from pyworkflow.protocol.constants import LEVEL_ADVANCED
 from pyworkflow.protocol.params import (LabelParam, NumericRangeParam,IntParam,
                                         EnumParam, FloatParam)
@@ -234,7 +233,7 @@ Examples:
             f.close()
             view = em.ChimeraView(cmdFile)
         else:
-            from pyworkflow.em.viewer import ChimeraClientView
+            from pyworkflow.em.viewers import ChimeraClientView
             #view = CommandView('xmipp_chimera_client --input "%s" --mode projector 256 &' % volumes[0])
             view = ChimeraClientView(volumes[0], showProjection=False)
             

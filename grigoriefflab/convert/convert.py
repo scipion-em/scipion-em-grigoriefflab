@@ -118,7 +118,7 @@ def matrixFromGeometry(shifts, angles):
     2D shifts in X and Y...and the 3 euler angles.
     """
     inverseTransform = True
-    from pyworkflow.em.transformations import euler_matrix
+    from pyworkflow.em.convert.transformations import  euler_matrix
     from numpy import deg2rad
     radAngles = -deg2rad(angles)
 
@@ -241,7 +241,7 @@ def readCtfModel(ctfModel, filename, ctf4=False, ctfTilt=False):
 
 
 def geometryFromMatrix(matrix, inverseTransform=True):
-    from pyworkflow.em.transformations import translation_from_matrix, euler_from_matrix
+    from pyworkflow.em.convert.transformations import  translation_from_matrix, euler_from_matrix
 
     if inverseTransform:
         matrix = inv(matrix)

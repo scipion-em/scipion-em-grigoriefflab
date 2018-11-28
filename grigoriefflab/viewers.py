@@ -32,6 +32,8 @@ from pyworkflow.viewer import (Viewer, ProtocolViewer,
 from pyworkflow.em.viewers import DataView, CtfView, EmPlotter
 import pyworkflow.em.viewers.showj as showj
 import pyworkflow.em as em
+from pyworkflow.em.viewers.views import ObjectView, Classes3DView
+from pyworkflow.em.viewers.viewer_chimera import ChimeraView, ChimeraClientView
 
 from pyworkflow.gui.project import ProjectWindow
 from pyworkflow.protocol.constants import LEVEL_ADVANCED
@@ -216,8 +218,8 @@ Examples:
                     files.append(volFn)
         
         self.createVolumesSqlite(files, path, samplingRate)
-        return [em.ObjectView(self._project, self.protocol.strId(), path)]
-    
+        return [ObjectView(self._project, self.protocol.strId(), path)]
+
     def _showVolumesChimera(self):
         """ Create a chimera script to visualize selected volumes. """
         volumes = self._getVolumeNames()
@@ -231,10 +233,8 @@ Examples:
                     f.write("open %s\n" % localVol)
             f.write('tile\n')
             f.close()
-            view = em.ChimeraView(cmdFile)
+            view = ChimeraView(cmdFile)
         else:
-            from pyworkflow.em.viewers import ChimeraClientView
-            #view = CommandView('xmipp_chimera_client --input "%s" --mode projector 256 &' % volumes[0])
             view = ChimeraClientView(volumes[0], showProjection=False)
             
         return [view]
@@ -270,14 +270,14 @@ Examples:
                 if exists(data_angularDist):
                     sqliteFn = self.protocol._getFileName('projections', iter=it)
                     self.createAngDistributionSqlite(sqliteFn, nparts, itemDataIterator=self._iterAngles(it, data_angularDist))
-                    view = em.ChimeraClientView(volumes[0], showProjection=True, angularDistFile=sqliteFn, spheresDistance=radius)
+                    view = ChimeraClientView(volumes[0], showProjection=True, angularDistFile=sqliteFn, spheresDistance=radius)
             else:
                 for ref3d in self._refsList:
                     data_angularDist = self.protocol._getFileName("output_par_class", iter=it, ref=ref3d)
                     if exists(data_angularDist):
                         sqliteFn = self.protocol._getFileName('projectionsClass', iter=it, ref=ref3d)
                         self.createAngDistributionSqlite(sqliteFn, nparts, itemDataIterator=self._iterAngles(it, data_angularDist))
-                        view = em.ChimeraClientView(volumes[0], showProjection=True, angularDistFile=sqliteFn, spheresDistance=radius)
+                        view = ChimeraClientView(volumes[0], showProjection=True, angularDistFile=sqliteFn, spheresDistance=radius)
         return view
     
     def _createAngDist2D(self, it):
@@ -431,11 +431,11 @@ Examples:
             return ['There are not iterations completed.'] 
     
     def createDataView(self, filename, viewParams={}):
-        return em.DataView(filename, env=self._env, viewParams=viewParams)
+        return DataView(filename, env=self._env, viewParams=viewParams)
     
     def createScipionView(self, filename, viewParams={}):
         inputParticlesId = self.protocol.inputParticles.get().strId()
-        return em.Classes3DView(self._project,
+        return Classes3DView(self._project,
                                 self.protocol.strId(), filename, other=inputParticlesId,
                                 env=self._env, viewParams=viewParams)
         
@@ -447,7 +447,7 @@ Examples:
                       showj.VISIBLE: labels, showj.RENDER:'_filename',
                       'labels': 'id',
                       }
-        return em.ObjectView(self._project,  self.protocol.strId(),
+        return ObjectView(self._project,  self.protocol.strId(),
                              filename, other=inputParticlesId,
                              env=self._env, viewParams=viewParams)
     

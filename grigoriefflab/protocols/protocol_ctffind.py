@@ -27,8 +27,8 @@
 
 import os
 import sys
-import pyworkflow.utils as pwutils
-import pyworkflow.em as pwem
+
+import pyworkflow as pw
 import pyworkflow.protocol.params as params
 
 from grigoriefflab import Plugin
@@ -37,7 +37,7 @@ from grigoriefflab.convert import (readCtfModel, parseCtffindOutput,
                                    parseCtffind4Output)
 
 
-class ProtCTFFind(pwem.ProtCTFMicrographs):
+class ProtCTFFind(pw.em.ProtCTFMicrographs):
     """
     Estimates CTF on a set of micrographs
     using either ctffind3 or ctffind4 program.
@@ -66,7 +66,7 @@ class ProtCTFFind(pwem.ProtCTFMicrographs):
         return missingPaths
 
     def _defineParams(self, form):
-        pwem.ProtCTFMicrographs._defineParams(self, form)
+        pw.em.ProtCTFMicrographs._defineParams(self, form)
         # Define the streaming parameters at the end
         self._defineStreamingParams(form)
 
@@ -125,39 +125,35 @@ class ProtCTFFind(pwem.ProtCTFMicrographs):
                            "Set this parameters to *No* to get faster fits.")
 
     # -------------------------- STEPS functions ------------------------------
-    def _estimateCTF(self, micFn, micDir, micName):
+    def _estimateCTF(self, mic, *args):
         """ Run ctffind, 3 or 4, with required parameters """
-
-        doneFile = os.path.join(micDir, 'done.txt')
-
-        if self.isContinued() and os.path.exists(doneFile):
-            return
-
         try:
+            micFn = mic.getFileName()
+            micDir = self._getTmpPath('mic_%04d' % mic.getObjId())
             # Create micrograph dir
-            pwutils.makePath(micDir)
+            pw.utils.makePath(micDir)
             downFactor = self.ctfDownFactor.get()
             scannedPixelSize = self.inputMicrographs.get().getScannedPixelSize()
-            micFnMrc = self._getTmpPath(pwutils.replaceBaseExt(micFn, 'mrc'))
+            micFnMrc = os.path.join(micDir, pw.utils.replaceBaseExt(micFn, 'mrc'))
+
+            ih = pw.em.ImageHandler()
+
+            if not ih.existsLocation(micFn):
+                raise Exception("Missing input micrograph %s" % micFn)
 
             if downFactor != 1:
                 # Replace extension by 'mrc' because there are some formats
                 # that cannot be written (such as dm3)
-                pwem.ImageHandler().scaleFourier(micFn, micFnMrc, downFactor)
+                ih.scaleFourier(micFn, micFnMrc, downFactor)
                 self._params['scannedPixelSize'] = scannedPixelSize * downFactor
             else:
-                ih = pwem.ImageHandler()
-                if ih.existsLocation(micFn):
-                    micFnMrc = self._getTmpPath(pwutils.replaceBaseExt(micFn, "mrc"))
-                    ih.convert(micFn, micFnMrc, pwem.DT_FLOAT)
-                else:
-                    print >> sys.stderr, "Missing input micrograph %s" % micFn
+                ih.convert(micFn, micFnMrc, pw.em.DT_FLOAT)
 
             # Update _params dictionary
             self._params['micFn'] = micFnMrc
             self._params['micDir'] = micDir
-            self._params['ctffindOut'] = self._getCtfOutPath(micDir)
-            self._params['ctffindPSD'] = self._getPsdPath(micDir)
+            self._params['ctffindOut'] = self._getCtfOutPath(mic)
+            self._params['ctffindPSD'] = self._getPsdPath(mic)
 
         except Exception as ex:
             print >> sys.stderr, "Some error happened: %s" % ex
@@ -169,26 +165,19 @@ class ProtCTFFind(pwem.ProtCTFMicrographs):
         except Exception as ex:
             print >> sys.stderr, "ctffind has failed with micrograph %s" % micFnMrc
 
-        # Let's notify that this micrograph have been processed
-        # just creating an empty file at the end (after success or failure)
-        open(doneFile, 'w')
-        # Let's clean the temporary mrc micrographs
-        pwutils.cleanPath(micFnMrc)
-
     def _restimateCTF(self, ctfId):
         """ Run ctffind3 with required parameters """
-
         ctfModel = self.recalculateSet[ctfId]
         mic = ctfModel.getMicrograph()
         micFn = mic.getFileName()
         micDir = self._getMicrographDir(mic)
 
-        out = self._getCtfOutPath(micDir)
-        psdFile = self._getPsdPath(micDir)
+        out = self._getCtfOutPath(mic)
+        psdFile = self._getPsdPath(mic)
 
-        pwutils.cleanPath(out)
-        micFnMrc = self._getTmpPath(pwutils.replaceBaseExt(micFn, "mrc"))
-        pwem.ImageHandler().convert(micFn, micFnMrc, pwem.DT_FLOAT)
+        pw.utils.cleanPath(out)
+        micFnMrc = self._getTmpPath(pw.utils.replaceBaseExt(micFn, "mrc"))
+        pw.em.ImageHandler().convert(micFn, micFnMrc, pw.em.DT_FLOAT)
 
         # Update _params dictionary
         self._prepareRecalCommand(ctfModel)
@@ -197,26 +186,25 @@ class ProtCTFFind(pwem.ProtCTFMicrographs):
         self._params['ctffindOut'] = out
         self._params['ctffindPSD'] = psdFile
 
-        pwutils.cleanPath(psdFile)
+        pw.utils.cleanPath(psdFile)
         try:
             self.runJob(self._program, self._args % self._params)
         except Exception as ex:
             print >> sys.stderr, "ctffind has failed with micrograph %s" % micFnMrc
-        pwutils.cleanPattern(micFnMrc)
+        pw.utils.cleanPattern(micFnMrc)
 
     def _createCtfModel(self, mic, updateSampling=True):
         #  When downsample option is used, we need to update the
-        # sampling rate of the micrograph associeted with the CTF
+        # sampling rate of the micrograph associated with the CTF
         # since it could be downsampled
         if updateSampling:
             newSampling = mic.getSamplingRate() * self.ctfDownFactor.get()
             mic.setSamplingRate(newSampling)
 
-        micDir = self._getMicrographDir(mic)
-        out = self._getCtfOutPath(micDir)
-        psdFile = self._getPsdPath(micDir)
+        out = self._getCtfOutPath(mic)
+        psdFile = self._getPsdPath(mic)
 
-        ctfModel = pwem.CTFModel()
+        ctfModel = pw.em.CTFModel()
         readCtfModel(ctfModel, out, ctf4=self.useCtffind4.get())
         ctfModel.setPsdFile(psdFile)
         ctfModel.setMicrograph(mic)
@@ -238,9 +226,6 @@ class ProtCTFFind(pwem.ProtCTFMicrographs):
                 valueStep <= (valueMax-valueMin) and
                 0.10 <= valueMax <= 3.15):
             errors.append('Wrong values for phase shift search.')
-
-        if self._getStreamingBatchSize() > 1:
-            errors.append("Batch steps are not implemented yet for Ctffind. ")
 
         return errors
 
@@ -302,7 +287,7 @@ class ProtCTFFind(pwem.ProtCTFMicrographs):
         # get the size and the image of psd
 
         imgPsd = ctfModel.getPsdFile()
-        imgh = pwem.ImageHandler()
+        imgh = pw.em.ImageHandler()
         size, _, _, _ = imgh.getDimensions(imgPsd)
 
         mic = ctfModel.getMicrograph()
@@ -410,11 +395,15 @@ eof
 eof
 """
 
-    def _getPsdPath(self, micDir):
-        return os.path.join(micDir, 'ctfEstimation.mrc')
+    def _getMicExtra(self, mic, suffix):
+        """ Return a file in extra direction with root of micFn. """
+        return self._getExtraPath(os.path.basename(mic.getFileName()) + suffix)
 
-    def _getCtfOutPath(self, micDir):
-        return os.path.join(micDir, 'ctfEstimation.txt')
+    def _getPsdPath(self, mic):
+        return self._getMicExtra(mic, 'ctfEstimation.mrc')
+
+    def _getCtfOutPath(self, mic):
+        return self._getMicExtra(mic, 'ctfEstimation.txt')
 
     def _parseOutput(self, filename):
         """ Try to find the output estimation parameters
@@ -426,14 +415,14 @@ eof
             return parseCtffind4Output(filename)
 
     def _getCTFModel(self, defocusU, defocusV, defocusAngle, psdFile):
-        ctf = pwem.CTFModel()
+        ctf = pw.em.CTFModel()
         ctf.setStandardDefocus(defocusU, defocusV, defocusAngle)
         ctf.setPsdFile(psdFile)
 
         return ctf
 
     def _summary(self):
-        summary = pwem.ProtCTFMicrographs._summary(self)
+        summary = pw.em.ProtCTFMicrographs._summary(self)
         if self.useCtffind4 and self._getVersionCtffind4() == '4.1.5':
             summary.append("NOTE: ctffind4.1.5 finishes correctly (all output "
                            "is generated properly), but returns an error code. "

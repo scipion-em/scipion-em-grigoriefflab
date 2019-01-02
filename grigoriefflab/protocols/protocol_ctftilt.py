@@ -78,9 +78,10 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
                       label='Uncertainty')
 
     # --------------------------- STEPS functions -----------------------------
-    def _estimateCTF(self, micFn, micDir, micName):
+    def _estimateCTF(self, mic, *args):
         """ Run ctftilt with required parameters """
-
+        micFn = mic.getFileName()
+        micDir = self._getTmpPath('mic_%04d' % mic.getObjId())
         doneFile = os.path.join(micDir, 'done.txt')
 
         if self.isContinued() and os.path.exists(doneFile):

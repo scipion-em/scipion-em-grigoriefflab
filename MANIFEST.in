@@ -1,1 +1,8 @@
+#include changes
 include *.txt
+
+#include readme
+include *.md
+
+#include license
+include LICENSE

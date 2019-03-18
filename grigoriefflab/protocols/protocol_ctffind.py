@@ -397,7 +397,8 @@ eof
 
     def _getMicExtra(self, mic, suffix):
         """ Return a file in extra direction with root of micFn. """
-        return self._getExtraPath(os.path.basename(mic.getFileName()) + suffix)
+        return self._getExtraPath(pw.utils.removeBaseExt(os.path.basename(
+            mic.getFileName())) + '_' + suffix)
 
     def _getPsdPath(self, mic):
         return self._getMicExtra(mic, 'ctfEstimation.mrc')

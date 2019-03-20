@@ -32,7 +32,7 @@ from grigoriefflab import *
 from grigoriefflab.protocols import *
 
 
-class TestBrandeisBase(BaseTest):
+class TestBase(BaseTest):
     @classmethod
     def setData(cls, dataProject='xmipp_tutorial'):
         cls.dataset = DataSet.getDataSet(dataProject)
@@ -180,53 +180,11 @@ class TestImportParticles(BaseTest):
         self.assertTrue(outputParticles.hasAlignmentProj())
 
     
-class TestBrandeisCtffind(TestBrandeisBase):
+class TestCtffind4(TestBase):
     @classmethod
     def setUpClass(cls):
         setupTestProject(cls)
-        TestBrandeisBase.setData()
-        cls.protImport = cls.runImportMicrographBPV(cls.micFn)
-    
-    def testCtffind(self):
-        protCTF = ProtCTFFind(useCtffind4=False)
-        protCTF.inputMicrographs.set(self.protImport.outputMicrographs)
-        protCTF.ctfDownFactor.set(2)
-        protCTF.numberOfThreads.set(4)
-        self.proj.launchProtocol(protCTF, wait=True)
-        self.assertIsNotNone(protCTF.outputCTF,
-                             "SetOfCTF has not been produced.")
-        
-        valuesList = [[23861, 23664, 56],
-                      [22383, 22153, 52.6],
-                      [22716, 22526, 59.1]]
-        for ctfModel, values in izip(protCTF.outputCTF, valuesList):
-            self.assertAlmostEquals(ctfModel.getDefocusU(),values[0], delta=1000)
-            self.assertAlmostEquals(ctfModel.getDefocusV(),values[1], delta=1000)
-            self.assertAlmostEquals(ctfModel.getDefocusAngle(),values[2], delta=5)
-            self.assertAlmostEquals(ctfModel.getMicrograph().getSamplingRate(),
-                                    2.474, delta=0.001)
-
-    def testCtffind2(self):
-        protCTF = ProtCTFFind(useCtffind4=False)
-        protCTF.inputMicrographs.set(self.protImport.outputMicrographs)
-        protCTF.numberOfThreads.set(4)
-        self.proj.launchProtocol(protCTF, wait=True)
-        self.assertIsNotNone(protCTF.outputCTF, "SetOfCTF has not been produced.")
-        
-        valuesList = [[23920, 23499, 57.6], [22231, 21905, 59.3], [22444, 22270, 45.9]]
-        for ctfModel, values in izip(protCTF.outputCTF, valuesList):
-            self.assertAlmostEquals(ctfModel.getDefocusU(),values[0], delta=1000)
-            self.assertAlmostEquals(ctfModel.getDefocusV(),values[1], delta=1000)
-            self.assertAlmostEquals(ctfModel.getDefocusAngle(),values[2], delta=5)
-            self.assertAlmostEquals(ctfModel.getMicrograph().getSamplingRate(),
-                                    1.237, delta=0.001)
-
-
-class TestBrandeisCtffind4(TestBrandeisBase):
-    @classmethod
-    def setUpClass(cls):
-        setupTestProject(cls)
-        TestBrandeisBase.setData()
+        TestBase.setData()
         cls.protImport = cls.runImportMicrographBPV(cls.micFn)
     
     def testCtffind4V1(self):
@@ -262,7 +220,7 @@ class TestBrandeisCtffind4(TestBrandeisBase):
                                     1.237, delta=0.001)
 
 
-class TestBrandeisCtftilt(TestBrandeisBase):
+class TestCtftilt(TestBase):
     @classmethod
     def setUpClass(cls):
         setupTestProject(cls)
@@ -291,13 +249,13 @@ class TestBrandeisCtftilt(TestBrandeisBase):
                                     4.56, delta=0.001)
 
 
-class TestFrealignRefine(TestBrandeisBase):
+class TestFrealignRefine(TestBase):
     @classmethod
     def setUpClass(cls):
         setupTestProject(cls)
         dataProject='grigorieff'
         dataset = DataSet.getDataSet(dataProject)
-        TestBrandeisBase.setData()
+        TestBase.setData()
         particlesPattern = dataset.getFile('particles.sqlite')
         volFn = dataset.getFile('ref_volume.vol')
         cls.protImportPart = cls.runImportParticleGrigorieff(particlesPattern)
@@ -327,13 +285,13 @@ class TestFrealignRefine(TestBrandeisBase):
         self.launchProtocol(frealign)
 
 
-class TestFrealignClassify(TestBrandeisBase):
+class TestFrealignClassify(TestBase):
     @classmethod
     def setUpClass(cls):
         setupTestProject(cls)
         dataProject='grigorieff'
         dataset = DataSet.getDataSet(dataProject)
-        TestBrandeisBase.setData()
+        TestBase.setData()
         particlesPattern = dataset.getFile('particles.sqlite')
         volFn = dataset.getFile('ref_volume.vol')
         cls.protImportPart = cls.runImportParticleGrigorieff(particlesPattern)
@@ -364,4 +322,3 @@ class TestFrealignClassify(TestBrandeisBase):
         frealign.inputParticles.set(self.protImportPart.outputParticles)
         frealign.input3DReference.set(self.protImportVol.outputVolume)
         self.launchProtocol(frealign)
-

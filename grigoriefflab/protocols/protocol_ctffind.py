@@ -29,12 +29,9 @@ import os
 import sys
 
 import pyworkflow as pw
-import pyworkflow.protocol.params as params
-
-from grigoriefflab import Plugin
-from grigoriefflab.constants import (V4_0_15, V4_1_10, CTFFIND, CTFFIND4)
-from grigoriefflab.convert import (readCtfModel, parseCtffindOutput,
-                                   parseCtffind4Output)
+import grigoriefflab.convert as convert
+from grigoriefflab.constants import V4_0_15
+from .program_ctffind import ProgramCtffind
 
 
 class ProtCTFFind(pw.em.ProtCTFMicrographs):
@@ -45,7 +42,7 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
     To find more information about ctffind4 go to:
     http://grigoriefflab.janelia.org/ctffind4
     """
-    _label = 'ctffind'
+    _label = 'ctffind4'
 
     @classmethod
     def validateInstallation(cls):
@@ -67,62 +64,14 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
 
     def _defineParams(self, form):
         pw.em.ProtCTFMicrographs._defineParams(self, form)
-        # Define the streaming parameters at the end
         self._defineStreamingParams(form)
 
     def _defineProcessParams(self, form):
-        form.addParam('useCtffind4', params.BooleanParam, default=True,
-                      label="Use ctffind4 to estimate the CTF?",
-                      help='If is true, the protocol will use ctffind4 instead of ctffind3')
-        form.addParam('astigmatism', params.FloatParam, default=100.0,
-                      label='Expected (tolerated) astigmatism (A)',
-                      expertLevel=params.LEVEL_ADVANCED,
-                      help='Astigmatism values much larger than this will be penalised '
-                           '(Angstroms; set negative to remove this restraint)',
-                      condition='useCtffind4')
-        form.addParam('findPhaseShift', params.BooleanParam, default=False,
-                      label="Find additional phase shift?", condition='useCtffind4',
-                      help='If the data was collected with phase plate, this will find '
-                           'additional phase shift due to phase plate',
-                      expertLevel=params.LEVEL_ADVANCED)
+        ProgramCtffind.defineFormParams(form)
 
-        group = form.addGroup('Phase shift parameters')
-        group.addParam('minPhaseShift', params.FloatParam, default=0.0,
-                       label="Minimum phase shift (rad)", condition='findPhaseShift',
-                       help='Lower bound of the search for additional phase shift. '
-                            'Phase shift is of scattered electrons relative to '
-                            'unscattered electrons. In radians.',
-                       expertLevel=params.LEVEL_ADVANCED)
-        group.addParam('maxPhaseShift', params.FloatParam, default=3.15,
-                       label="Maximum phase shift (rad)", condition='findPhaseShift',
-                       help='Upper bound of the search for additional phase shift. '
-                            'Phase shift is of scattered electrons relative to '
-                            'unscattered electrons. In radians. '
-                            'Please use value between 0.10 and 3.15',
-                       expertLevel=params.LEVEL_ADVANCED)
-        group.addParam('stepPhaseShift', params.FloatParam, default=0.2,
-                       label="Phase shift search step (rad)", condition='findPhaseShift',
-                       help='Step size for phase shift search (radians)',
-                       expertLevel=params.LEVEL_ADVANCED)
-
-        form.addParam('resamplePix', params.BooleanParam, default=True,
-                      label="Resample micrograph if pixel size too small?",
-                      condition='useCtffind4 and _isNewCtffind4',
-                      help='When the pixel is too small, Thon rings appear very thin '
-                           'and near the origin of the spectrum, which can lead to '
-                           'suboptimal fitting. This options resamples micrographs to '
-                           'a more reasonable pixel size if needed',
-                      expertLevel=params.LEVEL_ADVANCED)
-
-        form.addParam('slowSearch', params.BooleanParam, default=True,
-                      expertLevel=params.LEVEL_ADVANCED,
-                      label="Slower, more exhaustive search?",
-                      condition='useCtffind4 and _isNewCtffind4',
-                      help="From version 4.1.5 to 4.1.8 the slow (more precise) "
-                           "search was activated by default because of reports the "
-                           "faster 1D search was significantly less accurate "
-                           "(thanks Rado Danev & Tim Grant). "
-                           "Set this parameters to *No* to get faster fits.")
+    def _defineCtfParamsDict(self):
+        pw.em.ProtCTFMicrographs._defineCtfParamsDict(self)
+        self._ctfProgram = ProgramCtffind(self)
 
     # -------------------------- STEPS functions ------------------------------
     def _estimateCTF(self, mic, *args):
@@ -133,7 +82,6 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
             # Create micrograph dir
             pw.utils.makePath(micDir)
             downFactor = self.ctfDownFactor.get()
-            scannedPixelSize = self.inputMicrographs.get().getScannedPixelSize()
             micFnMrc = os.path.join(micDir, pw.utils.replaceBaseExt(micFn, 'mrc'))
 
             ih = pw.em.ImageHandler()
@@ -145,23 +93,19 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
                 # Replace extension by 'mrc' because there are some formats
                 # that cannot be written (such as dm3)
                 ih.scaleFourier(micFn, micFnMrc, downFactor)
-                self._params['scannedPixelSize'] = scannedPixelSize * downFactor
             else:
                 ih.convert(micFn, micFnMrc, pw.em.DT_FLOAT)
-
-            # Update _params dictionary
-            self._params['micFn'] = micFnMrc
-            self._params['micDir'] = micDir
-            self._params['ctffindOut'] = self._getCtfOutPath(mic)
-            self._params['ctffindPSD'] = self._getPsdPath(mic)
 
         except Exception as ex:
             print >> sys.stderr, "Some error happened: %s" % ex
             import traceback
             traceback.print_exc()
-
         try:
-            self.runJob(self._program, self._args % self._params)
+            program, args = self._ctfProgram.getCommand(
+                micFn=micFnMrc,
+                ctffindOut=self._getCtfOutPath(mic),
+                ctffindPSD=self._getPsdPath(mic))
+            self.runJob(program, args)
         except Exception as ex:
             print >> sys.stderr, "ctffind has failed with micrograph %s" % micFnMrc
 
@@ -205,7 +149,7 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
         psdFile = self._getPsdPath(mic)
 
         ctfModel = pw.em.CTFModel()
-        readCtfModel(ctfModel, out, ctf4=self.useCtffind4.get())
+        convert.readCtfModel(ctfModel, out, ctf4=self.useCtffind4.get())
         ctfModel.setPsdFile(psdFile)
         ctfModel.setMicrograph(mic)
 
@@ -235,51 +179,16 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
     def _methods(self):
         if self.inputMicrographs.get() is None:
             return ['Input micrographs not available yet.']
-        methods = "We calculated the CTF of %s using CTFFind. " % self.getObjectTag('inputMicrographs')
+        methods = ("We calculated the CTF of %s using CTFFind. "
+                   % self.getObjectTag('inputMicrographs'))
         methods += self.methodsVar.get('')
         methods += 'Output CTFs: %s' % self.getObjectTag('outputCTF')
 
         return [methods]
 
     # -------------------------- UTILS functions ------------------------------
-    def _getVersionCtffind4(self):
-        return Plugin.getActiveVersion(CTFFIND4)
-
     def _isNewCtffind4(self):
-        return self.useCtffind4 and self._getVersionCtffind4() != V4_0_15
-
-    def _getProgram(self):
-        binaryKey = CTFFIND4 if self.useCtffind4 else CTFFIND
-        useMP = self.numberOfThreads > 1 and not self.useCtffind4
-        return Plugin.getProgram(binaryKey, useMP=useMP)
-
-    def _prepareCommand(self):
-        sampling = self.inputMics.getSamplingRate() * self.ctfDownFactor.get()
-        # Convert digital frequencies to spatial frequencies
-        self._params['sampling'] = sampling
-        self._params['lowRes'] = sampling / self._params['lowRes']
-        if self._params['lowRes'] > 50:
-            self._params['lowRes'] = 50
-        self._params['highRes'] = sampling / self._params['highRes']
-        self._params['step_focus'] = 500.0
-        if not self.useCtffind4:
-            self._argsCtffind3()
-        else:
-            self._params['astigmatism'] = self.astigmatism.get()
-            if self.findPhaseShift:
-                self._params['phaseShift'] = "yes"
-                self._params['minPhaseShift'] = self.minPhaseShift.get()
-                self._params['maxPhaseShift'] = self.maxPhaseShift.get()
-                self._params['stepPhaseShift'] = self.stepPhaseShift.get()
-            else:
-                self._params['phaseShift'] = "no"
-
-            # ctffind >= v4.1.5
-            self._params['resamplePix'] = "yes" if self.resamplePix else "no"
-
-            self._params['slowSearch'] = "yes" if self.slowSearch else "no"
-
-            self._argsCtffind4()
+        return ProgramCtffind.getVersion() != V4_0_15
 
     def _prepareRecalCommand(self, ctfModel):
         line = ctfModel.getObjComment().split()
@@ -317,84 +226,6 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
 
             self._params['slowSearch'] = "yes" if self.slowSearch else "no"
 
-            self._argsCtffind4()
-
-    def _argsCtffind3(self):
-        self._program = 'export NATIVEMTZ=kk ; '
-        if self.numberOfThreads.get() > 1:
-            self._program += 'export NCPUS=1 ;'
-        self._program += self._getProgram()
-        self._args = """   << eof > %(ctffindOut)s
-%(micFn)s
-%(ctffindPSD)s
-%(sphericalAberration)f,%(voltage)f,%(ampContrast)f,%(magnification)f,%(scannedPixelSize)f
-%(windowSize)d,%(lowRes)f,%(highRes)f,%(minDefocus)f,%(maxDefocus)f,%(step_focus)f
-eof
-"""
-
-    def _argsCtffind4(self):
-
-        # Avoid threads multiplication
-        # self._program = 'export OMP_NUM_THREADS=%d; ' % self.numberOfThreads.get()
-        self._program = 'export OMP_NUM_THREADS=1; '
-        self._program += self._getProgram()
-        self._args = """ << eof
-%(micFn)s
-%(ctffindPSD)s
-%(sampling)f
-%(voltage)f
-%(sphericalAberration)f
-%(ampContrast)f
-%(windowSize)d
-%(lowRes)f
-%(highRes)f
-%(minDefocus)f
-%(maxDefocus)f
-%(step_focus)f"""
-
-        if self._getVersionCtffind4() in ['4.1.5', '4.1.8', V4_1_10]:
-            if self.findPhaseShift:
-                self._args += """
-no
-%(slowSearch)s
-yes
-%(astigmatism)f
-%(phaseShift)s
-%(minPhaseShift)f
-%(maxPhaseShift)f
-%(stepPhaseShift)f
-yes
-%(resamplePix)s
-eof
-"""
-            else:
-                self._args += """
-no
-%(slowSearch)s
-yes
-%(astigmatism)f
-%(phaseShift)s
-yes
-%(resamplePix)s
-eof
-"""
-        elif self._getVersionCtffind4() == V4_0_15:
-            if self.findPhaseShift:
-                self._args += """
-%(astigmatism)f
-%(phaseShift)s
-%(minPhaseShift)f
-%(maxPhaseShift)f
-%(stepPhaseShift)f
-eof
-"""
-            else:
-                self._args += """
-%(astigmatism)f
-%(phaseShift)s
-eof
-"""
-
     def _getMicExtra(self, mic, suffix):
         """ Return a file in extra direction with root of micFn. """
         return self._getExtraPath(os.path.basename(mic.getFileName()) + suffix)
@@ -409,10 +240,7 @@ eof
         """ Try to find the output estimation parameters
         from filename. It search for a line containing: Final Values.
         """
-        if not self.useCtffind4:
-            return parseCtffindOutput(filename)
-        else:
-            return parseCtffind4Output(filename)
+        return self._ctfProgram.parseOutput(filename)
 
     def _getCTFModel(self, defocusU, defocusV, defocusAngle, psdFile):
         ctf = pw.em.CTFModel()

@@ -23,11 +23,12 @@
 # *  e-mail address 'scipion@cnb.csic.es'
 # *
 # **************************************************************************
-from test_protocols_grigoriefflab import TestBrandeisBase, TestImportParticles, \
-    TestBrandeisCtffind, TestBrandeisCtffind4, TestBrandeisCtftilt, \
-    TestFrealignRefine, TestFrealignClassify
-from test_protocols_grigoriefflab_magdist import TestMagDistBase, TestMagDist
-from test_protocols_grigoriefflab_movies import TestMoviesBase, TestUnblur, \
-    TestSummovie
+
+from .test_protocols_grigoriefflab import (
+    TestBase, TestImportParticles, TestCtffind4, TestCtftilt,
+    TestFrealignRefine, TestFrealignClassify)
+from .test_protocols_grigoriefflab_magdist import TestMagDistBase, TestMagDist
+from .test_protocols_grigoriefflab_movies import (TestMoviesBase, TestUnblur,
+                                                  TestSummovie)
 
 

@@ -74,7 +74,7 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
         self._ctfProgram = ProgramCtffind(self)
 
     # -------------------------- STEPS functions ------------------------------
-    def _estimateCTF(self, mic, *args):
+    def _doCtfEstimation(self, mic, **kwargs):
         """ Run ctffind, 3 or 4, with required parameters """
         try:
             micFn = mic.getFileName()
@@ -104,38 +104,19 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
             program, args = self._ctfProgram.getCommand(
                 micFn=micFnMrc,
                 ctffindOut=self._getCtfOutPath(mic),
-                ctffindPSD=self._getPsdPath(mic))
+                ctffindPSD=self._getPsdPath(mic),
+                **kwargs
+            )
             self.runJob(program, args)
         except Exception as ex:
             print >> sys.stderr, "ctffind has failed with micrograph %s" % micFnMrc
 
-    def _restimateCTF(self, ctfId):
+    def _estimateCTF(self, mic, *args):
+        self._doCtfEstimation(mic)
+
+    def _reEstimateCTF(self, mic, ctf):
         """ Run ctffind3 with required parameters """
-        ctfModel = self.recalculateSet[ctfId]
-        mic = ctfModel.getMicrograph()
-        micFn = mic.getFileName()
-        micDir = self._getMicrographDir(mic)
-
-        out = self._getCtfOutPath(mic)
-        psdFile = self._getPsdPath(mic)
-
-        pw.utils.cleanPath(out)
-        micFnMrc = self._getTmpPath(pw.utils.replaceBaseExt(micFn, "mrc"))
-        pw.em.ImageHandler().convert(micFn, micFnMrc, pw.em.DT_FLOAT)
-
-        # Update _params dictionary
-        self._prepareRecalCommand(ctfModel)
-        self._params['micFn'] = micFnMrc
-        self._params['micDir'] = micDir
-        self._params['ctffindOut'] = out
-        self._params['ctffindPSD'] = psdFile
-
-        pw.utils.cleanPath(psdFile)
-        try:
-            self.runJob(self._program, self._args % self._params)
-        except Exception as ex:
-            print >> sys.stderr, "ctffind has failed with micrograph %s" % micFnMrc
-        pw.utils.cleanPattern(micFnMrc)
+        self._doCtfEstimation(mic, **self._getRecalCtfParamsDict(ctf))
 
     def _createCtfModel(self, mic, updateSampling=True):
         #  When downsample option is used, we need to update the
@@ -190,41 +171,16 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
     def _isNewCtffind4(self):
         return ProgramCtffind.getVersion() != V4_0_15
 
-    def _prepareRecalCommand(self, ctfModel):
-        line = ctfModel.getObjComment().split()
-        self._defineRecalValues(ctfModel)
-        # get the size and the image of psd
-
-        imgPsd = ctfModel.getPsdFile()
-        imgh = pw.em.ImageHandler()
-        size, _, _, _ = imgh.getDimensions(imgPsd)
-
-        mic = ctfModel.getMicrograph()
-
-        # Convert digital frequencies to spatial frequencies
-        sampling = mic.getSamplingRate()
-        self._params['step_focus'] = 1000.0
-        self._params['sampling'] = sampling
-        self._params['lowRes'] = sampling / float(line[3])
-        self._params['highRes'] = sampling / float(line[4])
-        self._params['minDefocus'] = min([float(line[0]), float(line[1])])
-        self._params['maxDefocus'] = max([float(line[0]), float(line[1])])
-        self._params['windowSize'] = size
-        if not self.useCtffind4:
-            self._argsCtffind3()
-        else:
-            self._params['astigmatism'] = self.astigmatism.get()
-            if self.findPhaseShift:
-                self._params['phaseShift'] = "yes"
-                self._params['minPhaseShift'] = self.minPhaseShift.get()
-                self._params['maxPhaseShift'] = self.maxPhaseShift.get()
-                self._params['stepPhaseShift'] = self.stepPhaseShift.get()
-            else:
-                self._params['phaseShift'] = "no"
-            # ctffind >= v4.1.5
-            self._params['resamplePix'] = "yes" if self.resamplePix else "no"
-
-            self._params['slowSearch'] = "yes" if self.slowSearch else "no"
+    def _getRecalCtfParamsDict(self, ctfModel):
+        values = map(float, ctfModel.getObjComment().split())
+        sampling = ctfModel.getMicrograph().getSamplingRate()
+        return {
+            'step_focus': 1000.0,  # FIXME: Why is this different than in estimation???
+            'lowRes': sampling / values[3],
+            'highRes': sampling / values[4],
+            'minDefocus': min([values[0], values[1]]),
+            'maxDefocus': max([values[0], values[1]])
+        }
 
     def _getMicExtra(self, mic, suffix):
         """ Return a file in extra direction with root of micFn. """

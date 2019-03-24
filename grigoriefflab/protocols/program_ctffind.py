@@ -83,7 +83,7 @@ class ProgramCtffind:
 
         form.addParam('resamplePix', params.BooleanParam, default=True,
                       label="Resample micrograph if pixel size too small?",
-                      condition='useCtffind4 and _isNewCtffind4',
+                      condition='isNewCtffind4',
                       help='When the pixel is too small, Thon rings appear very thin '
                            'and near the origin of the spectrum, which can lead to '
                            'suboptimal fitting. This options resamples micrographs to '
@@ -93,7 +93,7 @@ class ProgramCtffind:
         form.addParam('slowSearch', params.BooleanParam, default=True,
                       expertLevel=params.LEVEL_ADVANCED,
                       label="Slower, more exhaustive search?",
-                      condition='useCtffind4 and _isNewCtffind4',
+                      condition='isNewCtffind4',
                       help="From version 4.1.5 to 4.1.8 the slow (more precise) "
                            "search was activated by default because of reports the "
                            "faster 1D search was significantly less accurate "
@@ -103,6 +103,10 @@ class ProgramCtffind:
     @staticmethod
     def getVersion():
         return Plugin.getActiveVersion(CTFFIND4)
+
+    @staticmethod
+    def isNewCtffind4():
+        return ProgramCtffind.getVersion() != V4_0_15
 
     @staticmethod
     def _getProgram():
@@ -129,9 +133,6 @@ class ProgramCtffind:
         output file of the program execution.
         """
         return convert.parseCtffind4Output(filename)
-
-    def _isNewCtffind4(self):
-        return self.getVersion() != V4_0_15
 
     def _getArgs(self, protocol):
         # Update first the _params dict

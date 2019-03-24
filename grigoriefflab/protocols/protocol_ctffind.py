@@ -168,8 +168,9 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
         return [methods]
 
     # -------------------------- UTILS functions ------------------------------
-    def _isNewCtffind4(self):
-        return ProgramCtffind.getVersion() != V4_0_15
+    def isNewCtffind4(self):
+        # This function is needed because it is used in Form params condition
+        return ProgramCtffind.isNewCtffind4()
 
     def _getRecalCtfParamsDict(self, ctfModel):
         values = map(float, ctfModel.getObjComment().split())

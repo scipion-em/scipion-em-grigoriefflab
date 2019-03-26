@@ -126,12 +126,9 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
             newSampling = mic.getSamplingRate() * self.ctfDownFactor.get()
             mic.setSamplingRate(newSampling)
 
-        out = self._getCtfOutPath(mic)
-        psdFile = self._getPsdPath(mic)
-
-        ctfModel = pw.em.CTFModel()
-        convert.readCtfModel(ctfModel, out, ctf4=self.useCtffind4.get())
-        ctfModel.setPsdFile(psdFile)
+        psd = self._getPsdPath(mic)
+        ctfModel = self._ctfProgram.parseOutputAsCtf(self._getCtfOutPath(mic),
+                                                     psdFile=psd)
         ctfModel.setMicrograph(mic)
 
         return ctfModel

@@ -25,6 +25,7 @@
 # *
 # **************************************************************************
 
+import pyworkflow.em as pwem
 import pyworkflow.protocol.params as params
 
 from grigoriefflab import Plugin
@@ -133,6 +134,17 @@ class ProgramCtffind:
         output file of the program execution.
         """
         return convert.parseCtffind4Output(filename)
+
+    def parseOutputAsCtf(self, filename, psdFile=None):
+        """ Parse the output file and build the CTFModel object
+        with the values.
+        """
+        ctf = pwem.CTFModel()
+        convert.readCtfModel(ctf, filename, ctf4=True)
+        if psdFile:
+            ctf.setPsdFile(psdFile)
+
+        return ctf
 
     def _getArgs(self, protocol):
         # Update first the _params dict

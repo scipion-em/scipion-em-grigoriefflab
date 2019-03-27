@@ -173,7 +173,7 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
         values = map(float, ctfModel.getObjComment().split())
         sampling = ctfModel.getMicrograph().getSamplingRate()
         return {
-            'step_focus': 1000.0,  # FIXME: Why is this different than in estimation???
+            'step_focus': 500.0,
             'lowRes': sampling / values[3],
             'highRes': sampling / values[4],
             'minDefocus': min([values[0], values[1]]),
@@ -205,7 +205,7 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
 
     def _summary(self):
         summary = pw.em.ProtCTFMicrographs._summary(self)
-        if self.useCtffind4 and self._getVersionCtffind4() == '4.1.5':
+        if self.useCtffind4 and ProgramCtffind.getVersion() == '4.1.5':
             summary.append("NOTE: ctffind4.1.5 finishes correctly (all output "
                            "is generated properly), but returns an error code. "
                            "Disregard error messages until this is fixed."

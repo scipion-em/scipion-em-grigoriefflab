@@ -29,16 +29,18 @@ This module contains converter functions that will serve to:
 2. Read from Grigorieff packages files to base classes
 """
 
-import os, re
-
+import os
+import re
 from itertools import izip
-import numpy
 from collections import OrderedDict
-from numpy import rad2deg, deg2rad
-from numpy.linalg import inv
+import numpy as np
+
+#from numpy import rad2deg, deg2rad
+#from np.linalg import inv
 
 from pyworkflow.object import Float
 import pyworkflow.em as em
+import pyworkflow.em.convert.transformations as transformations
 
 
 HEADER_COLUMNS = ['INDEX', 'PSI', 'THETA', 'PHI', 'SHX', 'SHY', 'MAG',
@@ -97,8 +99,8 @@ def rowToAlignment(alignmentRow, samplingRate):
     Return an Transform object representing the Alignment
     from a given parFile row.
     """
-    angles = numpy.zeros(3)
-    shifts = numpy.zeros(3)
+    angles = np.zeros(3)
+    shifts = np.zeros(3)
     alignment = em.Transform()
     # PSI   THETA     PHI       SHX       SHY
     angles[0] = float(alignmentRow.get('PSI'))
@@ -118,14 +120,13 @@ def matrixFromGeometry(shifts, angles):
     2D shifts in X and Y...and the 3 euler angles.
     """
     inverseTransform = True
-    from pyworkflow.em.convert.transformations import  euler_matrix
-    from numpy import deg2rad
-    radAngles = -deg2rad(angles)
+    radAngles = -np.deg2rad(angles)
 
-    M = euler_matrix(radAngles[0], radAngles[1], radAngles[2], 'szyz')
+    M = transformations.euler_matrix(
+        radAngles[0], radAngles[1], radAngles[2], 'szyz')
     if inverseTransform:
         M[:3, 3] = -shifts[:3]
-        M = inv(M)
+        M = np.linalg.inv(M)
     else:
         M[:3, 3] = shifts[:3]
 
@@ -139,7 +140,7 @@ def rowToCtfModel(ctfRow, ctfModel):
     ctfModel.setStandardDefocus(defocusU, defocusV, defocusAngle)
 
 
-# ------------- Old fuctions (before using EMX matrix for alignment) ------
+# ------------- Old functions (before using EMX matrix for alignment) ------
 def parseCtffindOutput(filename):
     """ Retrieve defocus U, V and angle from the
     output file of the ctffind3 execution.
@@ -224,7 +225,7 @@ def readCtfModel(ctfModel, filename, ctf4=False, ctfTilt=False):
             defocusU, defocusV, defocusAngle = result
             ctfModel.setStandardDefocus(defocusU, defocusV, defocusAngle)
     else:
-        result =  parseCtffind4Output(filename)
+        result = parseCtffind4Output(filename)
         if result is None:
             setWrongDefocus(ctfModel)
             ctfFit, ctfResolution, ctfPhaseShift = -999, -999, -999
@@ -235,20 +236,19 @@ def readCtfModel(ctfModel, filename, ctf4=False, ctfTilt=False):
         ctfModel.setResolution(ctfResolution)
 
         # Avoid creation of phaseShift
-        ctfPhaseShiftDeg = rad2deg(ctfPhaseShift)
+        ctfPhaseShiftDeg = np.rad2deg(ctfPhaseShift)
         if ctfPhaseShiftDeg != 0:
             ctfModel.setPhaseShift(ctfPhaseShiftDeg)
 
 
 def geometryFromMatrix(matrix, inverseTransform=True):
-    from pyworkflow.em.convert.transformations import  translation_from_matrix, euler_from_matrix
-
     if inverseTransform:
-        matrix = inv(matrix)
-        shifts = -translation_from_matrix(matrix)
+        matrix = np.linalg.inv(matrix)
+        shifts = -transformations.translation_from_matrix(matrix)
     else:
-        shifts = translation_from_matrix(matrix)
-    angles = -rad2deg(euler_from_matrix(matrix, axes='szyz'))
+        shifts = transformations.translation_from_matrix(matrix)
+    angles = -np.rad2deg(transformations.euler_from_matrix(matrix, axes='szyz'))
+
     return shifts, angles
 
 
@@ -388,26 +388,26 @@ def unDistortCoord(params):
     if len(params) != 7:
         raise Exception("Not enough params for undistorting!")
     x_original, y_original, mic_x, mic_y, ang, major_scale, minor_scale = params
-    angle_rad = rad2deg(ang)
+    angle_rad = np.rad2deg(ang)
 
     # pixel location relative to center of micrograph
     x = float(x_original) - float(mic_x) / 2.0
     y = float(y_original) - float(mic_y) / 2.0
 
     # rotate
-    r = numpy.sqrt(x ** 2 + y ** 2)
-    phi = numpy.arctan2(y, x) + angle_rad
+    r = np.sqrt(x ** 2 + y ** 2)
+    phi = np.arctan2(y, x) + angle_rad
 
     # scale
-    x = r * numpy.cos(phi) * major_scale
-    y = r * numpy.sin(phi) * minor_scale
+    x = r * np.cos(phi) * major_scale
+    y = r * np.sin(phi) * minor_scale
 
     # rotate back
-    r = numpy.sqrt(x ** 2 + y ** 2)
-    phi = numpy.arctan2(y, x) - angle_rad
+    r = np.sqrt(x ** 2 + y ** 2)
+    phi = np.arctan2(y, x) - angle_rad
 
     # pixel location relative to edge of micrograph
-    x_correct = r * numpy.cos(phi) + float(mic_x) / 2.0
-    y_correct = r * numpy.sin(phi) + float(mic_y) / 2.0
+    x_correct = r * np.cos(phi) + float(mic_x) / 2.0
+    y_correct = r * np.sin(phi) + float(mic_y) / 2.0
 
     return x_correct, y_correct

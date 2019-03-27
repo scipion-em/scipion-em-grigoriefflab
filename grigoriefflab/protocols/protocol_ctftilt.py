@@ -107,19 +107,16 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
                 else:
                     print >> sys.stderr, "Missing input micrograph %s" % micFn
 
-            # Update _params dictionary
-            self._params['micFn'] = micFnMrc
-            self._params['micDir'] = micDir
-            self._params['ctftiltOut'] = self._getCtfOutPath(micDir)
-            self._params['ctftiltPSD'] = self._getPsdPath(micDir)
-
         except Exception as ex:
             print >> sys.stderr, "Some error happened: %s" % ex
             import traceback
             traceback.print_exc()
 
         try:
-            self.runJob(self._program, self._args % self._params)
+            program, args = self._getCommand(micFn=micFnMrc,
+                                             ctftiltOut=self._getCtfOutPath(micDir),
+                                             ctftiltPSD=self._getPsdPath(micDir))
+            self.runJob(program, args)
         except Exception as ex:
             print >> sys.stderr, "ctftilt has failed with micrograph %s" % micFnMrc
 
@@ -143,17 +140,11 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
         pwutils.cleanPath(out)
         micFnMrc = self._getTmpPath(pwutils.replaceBaseExt(micFn, "mrc"))
         em.ImageHandler().convert(micFn, micFnMrc, em.DT_FLOAT)
-
-        # Update _params dictionary
-        self._prepareRecalCommand(ctfModel)
-        self._params['micFn'] = micFnMrc
-        self._params['micDir'] = micDir
-        self._params['ctftiltOut'] = out
-        self._params['ctftiltPSD'] = psdFile
-
         pwutils.cleanPath(psdFile)
         try:
-            self.runJob(self._program, self._args % self._params)
+            program, args = self._getRecalCommand(
+                ctfModel, micFn=micFnMrc, ctftiltOut=out, ctftiltPSD=psdFile)
+            self.runJob(program, args)
         except Exception as ex:
             print >> sys.stderr, "ctftilt has failed with micrograph %s" % micFnMrc
         pwutils.cleanPattern(micFnMrc)
@@ -180,7 +171,7 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
     def _createOutputStep(self):
         pass
 
-    #--------------------------- INFO functions -------------------------------
+    # -------------------------- INFO functions -------------------------------
     def _validate(self):
         errors = []
         ctftilt = self._getProgram()
@@ -205,26 +196,27 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
     # -------------------------- UTILS functions ------------------------------
     def _getProgram(self):
          return Plugin.getProgram(CTFFIND, CTFTILT,
-                                 useMP=self.numberOfThreads > 1)
+                                  useMP=self.numberOfThreads > 1)
 
-    def _prepareCommand(self):
-        sampling = self.inputMics.getSamplingRate() * self.ctfDownFactor.get()
+    def _getCommand(self, **kwargs):
+        params = self.getCtfParamsDict()
         # Convert digital frequencies to spatial frequencies
-        self._params['sampling'] = sampling
-        self._params['lowRes'] = sampling / self._params['lowRes']
-        if self._params['lowRes'] > 50:
-            self._params['lowRes'] = 50
-        self._params['highRes'] = sampling / self._params['highRes']
-        self._params['astigmatism'] = self.astigmatism.get()
-        self._params['step_focus'] = 500.0
-        self._params['pixelAvg'] = 1  # set to 1 since we have our own downsampling
-        self._params['tiltAngle'] = self.tiltA.get()
-        self._params['tiltR'] = self.tiltR.get()
-        self._argsCtftilt()
+        sampling = params['samplingRate']
+        params['lowRes'] = sampling / params['lowRes']
+        if params['lowRes'] > 50:
+            params['lowRes'] = 50
+        params['highRes'] = sampling / params['highRes']
+        params['astigmatism'] = self.astigmatism.get()
+        params['step_focus'] = 500.0
+        params['pixelAvg'] = 1  # set to 1 since we have our own downsampling
+        params['tiltAngle'] = self.tiltA.get()
+        params['tiltR'] = self.tiltR.get()
+        params.update(kwargs)
+        return self._getCommandFromParams(params)
 
-    def _prepareRecalCommand(self, ctfModel):
+    def _getRecalCommand(self, ctfModel, **kwargs):
         line = ctfModel.getObjComment().split()
-        self._defineRecalValues(ctfModel)
+        params = self.getRecalCtfParamsDict(ctfModel)
         # get the size and the image of psd
 
         imgPsd = ctfModel.getPsdFile()
@@ -235,37 +227,37 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
 
         # Convert digital frequencies to spatial frequencies
         sampling = mic.getSamplingRate()
-        self._params['step_focus'] = 1000.0
-        self._params['sampling'] = sampling
-        self._params['lowRes'] = sampling / float(line[3])
-        self._params['highRes'] = sampling / float(line[4])
-        self._params['minDefocus'] = min([float(line[0]), float(line[1])])
-        self._params['maxDefocus'] = max([float(line[0]), float(line[1])])
-        self._params['astigmatism'] = self.astigmatism.get()
-        self._params['windowSize'] = size
-        self._params['pixelAvg'] = 1  # set to 1 since we have our own downsampling
-        self._params['tiltAngle'] = self.tiltA.get()
-        self._params['tiltR'] = self.tiltR.get()
-        self._argsCtftilt()
+        params['step_focus'] = 1000.0
+        params['sampling'] = sampling
+        params['lowRes'] = sampling / float(line[3])
+        params['highRes'] = sampling / float(line[4])
+        params['minDefocus'] = min([float(line[0]), float(line[1])])
+        params['maxDefocus'] = max([float(line[0]), float(line[1])])
+        params['astigmatism'] = self.astigmatism.get()
+        params['windowSize'] = size
+        params['pixelAvg'] = 1  # set to 1 since we have our own downsampling
+        params['tiltAngle'] = self.tiltA.get()
+        params['tiltR'] = self.tiltR.get()
+        params.update(kwargs)
+
+        return self._getCommandFromParams(params)
 
     def _useThreads(self):
         return self.numberOfThreads > 1
 
-    # def _getProgram(self):
-    #     return Plugin.getProgram(CTFTILT, useMP=self._useThreads())
-
-    def _argsCtftilt(self):
-        self._program = 'export NATIVEMTZ=kk ; '
+    def _getCommandFromParams(self, params):
+        program = 'export NATIVEMTZ=kk ; '
         if self._useThreads():
-            self._program += 'export NCPUS=%d ;' % self.numberOfThreads
-        self._program += self._getProgram()
-        self._args = """   << eof > %(ctftiltOut)s
+            program += 'export NCPUS=%d ;' % self.numberOfThreads
+        program += self._getProgram()
+        args = """   << eof > %(ctftiltOut)s
 %(micFn)s
 %(ctftiltPSD)s
 %(sphericalAberration)f,%(voltage)f,%(ampContrast)f,%(magnification)f,%(scannedPixelSize)f,%(pixelAvg)d
 %(windowSize)d,%(lowRes)f,%(highRes)f,%(minDefocus)f,%(maxDefocus)f,%(step_focus)f,%(astigmatism)f,%(tiltAngle)f,%(tiltR)f
 eof
 """
+        return program, args % params
 
     def _getPsdPath(self, micDir):
         return os.path.join(micDir, 'ctfEstimation.mrc')

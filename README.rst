@@ -1,6 +1,6 @@
 
 ============================
-GRIGORIEFFLAB SCIPION PLUGIN
+Grigoriefflab scipion plugin
 ============================
 Plugin to use Grigorieff Lab (not CisTEM) programs within the Scipion framework.
 
@@ -20,4 +20,4 @@ Alternatively, in devel mode:
 
     scipion installp -p local/path/to/scipion-em-grigoriefflab --devel
 
-![build status](http://arquimedes.cnb.csic.es:9980/badges/grigoriefflab_devel.svg)
+![build status](http://arquimedes.cnb.csic.es:9980/badges/grigoriefflab_devel.svg "Build status")

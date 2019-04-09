@@ -59,6 +59,9 @@ class ProtFrealignBase(EMProtocol):
         """
         missingPaths = []
 
+        if not os.path.exists(Plugin.getHome(FREALIGN)):
+            missingPaths.append("Missing FREALIGN installation at %s" %
+                                Plugin.getHome(FREALIGN))
         # FIXME
         # if not os.path.exists(self._getProgram()):
         #     missingPaths.append("Missing FREALIGN installation at %s" %

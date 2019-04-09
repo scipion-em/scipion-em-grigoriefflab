@@ -59,8 +59,13 @@ class ProtMagDistCorr(ProtProcessMovies):
         and there are not errors. If some errors are found, a list with
         the error messages will be returned.
         """
+        missingPaths = []
         # FIXME
-        return [] #validateMagDistorsionInstallation()
+        if not os.path.exists(Plugin.getHome(MAGDIST)):
+            missingPaths.append("Missing MAGDIST installation at %s" %
+                                Plugin.getHome(MAGDIST))
+        return missingPaths
+        #validateMagDistorsionInstallation()
 
     # --------------------------- DEFINE params functions ----------------------
 

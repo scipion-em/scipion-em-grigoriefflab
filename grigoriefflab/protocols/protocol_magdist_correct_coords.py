@@ -23,7 +23,7 @@
 # *  e-mail address 'scipion@cnb.csic.es'
 # *
 # **************************************************************************
-
+import os
 from pyworkflow import VERSION_1_1
 import pyworkflow.protocol.params as params
 from pyworkflow.utils.properties import Message
@@ -31,6 +31,8 @@ from pyworkflow.em.protocol import EMProtocol
 
 #from grigoriefflab import validateMagDistorsionInstallation
 from grigoriefflab.convert import parseMagCorrInput, unDistortCoord
+from grigoriefflab import Plugin
+from grigoriefflab.constants import MAGDISTCORR, MAGDIST
 
 
 class ProtMagDistCorrCoord(EMProtocol):
@@ -49,8 +51,12 @@ class ProtMagDistCorrCoord(EMProtocol):
         and there are not errors. If some errors are found, a list with
         the error messages will be returned.
         """
+        missingPaths = []
         # FIXME
-        return [] #validateMagDistorsionInstallation()
+        if not os.path.exists(Plugin.getHome(MAGDIST)):
+            missingPaths.append("Missing MAGDISTCORR installation at %s" %
+                                Plugin.getHome(MAGDIST))
+        return missingPaths
 
     # --------------------------- DEFINE params functions ----------------------
 

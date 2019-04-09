@@ -57,8 +57,9 @@ class ProtSummovie(ProtAlignMovies):
         missingPaths = []
 
         # FIXME
-        # if not os.path.exists(SUMMOVIE_PATH):
-        #     missingPaths.append("%s : %s" % (SUMMOVIE_HOME,SUMMOVIE_PATH))
+        if not os.path.exists(Plugin.getHome(SUMMOVIE)):
+            missingPaths.append("Missing SUMMOVIE installation at %s" %
+                                Plugin.getHome(SUMMOVIE))
         return missingPaths
 
     # -------------------------- DEFINE param functions -----------------------

@@ -30,8 +30,9 @@ import sys
 
 import pyworkflow as pw
 import grigoriefflab.convert as convert
-from grigoriefflab.constants import V4_0_15
+from grigoriefflab.constants import *
 from .program_ctffind import ProgramCtffind
+from grigoriefflab import Plugin
 
 
 class ProtCTFFind(pw.em.ProtCTFMicrographs):
@@ -55,11 +56,10 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
         missingPaths = []
 
         # FIXME
-        # if not os.path.exists(CTFFIND4_PATH) \
-        #         and not os.path.exists(CTFFIND_PATH):
-        #     missingPaths.append("%s, %s : ctffind installation not found"
-        #                         " - %s or %s" % (CTFFIND_HOME, CTFFIND4_HOME,
-        #                                          CTFFIND_PATH, CTFFIND4_PATH))
+        if (not os.path.exists(Plugin.getHome(CTFFIND4)) and
+                not os.path.exists(Plugin.getHome(CTFFIND))):
+            missingPaths.append("%s, %s : ctffind installation not found"
+                                % (CTFFIND4_HOME, CTFFIND4_HOME))
         return missingPaths
 
     def _defineParams(self, form):

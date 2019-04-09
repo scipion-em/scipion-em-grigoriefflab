@@ -56,6 +56,11 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
         missingPaths = []
 
         # FIXME
+
+        if not os.path.exists(Plugin.getHome(CTFTILT)):
+            missingPaths.append("%s : ctffind3/ctftilt installation not found"
+                                     % CTFTILT)
+
         # ctftilt = cls._getProgram()
         #
         # if not os.path.exists(ctftilt):

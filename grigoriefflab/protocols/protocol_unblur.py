@@ -58,8 +58,9 @@ class ProtUnblur(ProtAlignMovies):
         missingPaths = []
 
         # FIXME
-        # if not os.path.exists(UNBLUR_PATH):
-        #     missingPaths.append("%s : %s" % (UNBLUR_HOME, UNBLUR_PATH))
+        if not os.path.exists(Plugin.getHome(UNBLUR)):
+            missingPaths.append("Missing UNBLUR installation at %s" %
+                                Plugin.getHome(UNBLUR))
         return missingPaths
 
     def _defineAlignmentParams(self, form):

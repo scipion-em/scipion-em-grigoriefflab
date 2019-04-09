@@ -23,7 +23,7 @@
 # *  e-mail address 'scipion@cnb.csic.es'
 # *
 # **************************************************************************
-
+import os
 from os.path import exists
 
 import pyworkflow.protocol.params as params
@@ -53,8 +53,12 @@ class ProtMagDistEst(ProtPreprocessMicrographs):
         and there are not errors. If some errors are found, a list with
         the error messages will be returned.
         """
+        missingPaths = []
         # FIXME
-        return []  # validateMagDistorsionInstallation()
+        if not os.path.exists(Plugin.getHome(MAGDIST)):
+            missingPaths.append("Missing MAGDISTEST installation at %s" %
+                                Plugin.getHome(MAGDIST))
+        return missingPaths
 
     def __init__(self, **args):
         ProtPreprocessMicrographs.__init__(self, **args)

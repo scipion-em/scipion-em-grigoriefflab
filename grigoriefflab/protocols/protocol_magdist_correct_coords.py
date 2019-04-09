@@ -52,7 +52,7 @@ class ProtMagDistCorrCoord(EMProtocol):
         the error messages will be returned.
         """
         missingPaths = []
-        # FIXME
+
         if not os.path.exists(Plugin.getHome(MAGDIST)):
             missingPaths.append("Missing MAGDISTCORR installation at %s" %
                                 Plugin.getHome(MAGDIST))

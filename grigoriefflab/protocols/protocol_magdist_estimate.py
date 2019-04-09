@@ -54,7 +54,7 @@ class ProtMagDistEst(ProtPreprocessMicrographs):
         the error messages will be returned.
         """
         missingPaths = []
-        # FIXME
+
         if not os.path.exists(Plugin.getHome(MAGDIST)):
             missingPaths.append("Missing MAGDISTEST installation at %s" %
                                 Plugin.getHome(MAGDIST))

@@ -59,7 +59,7 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
         if (not os.path.exists(Plugin.getHome(CTFFIND4)) and
                 not os.path.exists(Plugin.getHome(CTFFIND))):
             missingPaths.append("%s, %s : ctffind installation not found"
-                                % (CTFFIND4_HOME, CTFFIND4_HOME))
+                                % (CTFFIND4_HOME, CTFFIND_HOME))
         return missingPaths
 
     def _defineParams(self, form):

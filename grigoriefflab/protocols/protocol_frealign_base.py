@@ -62,10 +62,6 @@ class ProtFrealignBase(EMProtocol):
         if not os.path.exists(Plugin.getHome(FREALIGN)):
             missingPaths.append("Missing FREALIGN installation at %s" %
                                 Plugin.getHome(FREALIGN))
-        # FIXME
-        # if not os.path.exists(self._getProgram()):
-        #     missingPaths.append("Missing FREALIGN installation at %s" %
-        #                         grigoriefflab.Plugin.getHome(FREALIGN))
         return missingPaths
 
     def __init__(self, **args):

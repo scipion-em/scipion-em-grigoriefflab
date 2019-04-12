@@ -20,4 +20,4 @@ Alternatively, in devel mode:
 
     scipion installp -p local/path/to/scipion-em-grigoriefflab --devel
 
-![build status](http://arquimedes.cnb.csic.es:9980/badges/grigoriefflab_devel.svg "Build status")
+.. image:: http://arquimedes.cnb.csic.es:9980/badges/grigoriefflab_devel.svg

@@ -20,4 +20,4 @@ Alternatively, in devel mode:
 
     scipion installp -p local/path/to/scipion-em-grigoriefflab --devel
 
-.. image:: http://arquimedes.cnb.csic.es:9980/badges/grigoriefflab_devel.svg
+.. image:: http://scipion-test.cnb.csic.es:9980/badges/grigoriefflab_devel.svg

@@ -22,13 +22,13 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='scipion-em-grigoriefflab',  # Required
-    version='1.0.4',  # Required
+    version='1.0.5',  # Required
     description='Grigoriefflab ready to use in scipion.',  # Required
     long_description=long_description,  # Optional
     url='https://github.com/scipion-em/scipion-em-grigoriefflab',  # Optional
     author='I2PC',  # Optional
     author_email='scipion@cnb.csic.es',  # Optional
-    keywords='scipion cryoem imageprocessing scipion-1.2',  # Optional
+    keywords='scipion cryoem imageprocessing scipion-2.0',  # Optional
     packages=find_packages(),
     package_data={  # Optional
        'grigoriefflab': ['grigoriefflab_logo.png', 'protocols.conf'],

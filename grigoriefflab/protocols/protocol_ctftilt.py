@@ -200,7 +200,7 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
 
     # -------------------------- UTILS functions ------------------------------
     def _getProgram(self):
-         return Plugin.getProgram(CTFFIND, CTFTILT,
+         return Plugin.getProgram(CTFTILT,
                                   useMP=self.numberOfThreads > 1)
 
     def _getCommand(self, **kwargs):

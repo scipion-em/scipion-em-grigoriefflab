@@ -31,7 +31,7 @@ setup(
     url='https://github.com/scipion-em/scipion-em-grigoriefflab',  # Optional
     author='I2PC',  # Optional
     author_email='scipion@cnb.csic.es',  # Optional
-    keywords='scipion cryoem imageprocessing scipion-1.2',  # Optional
+    keywords='scipion cryoem imageprocessing scipion-2.0',  # Optional
     packages=find_packages(),
     package_data={  # Optional
        'grigoriefflab': ['grigoriefflab_logo.png', 'protocols.conf'],

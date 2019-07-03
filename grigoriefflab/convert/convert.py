@@ -168,6 +168,8 @@ def parseCtffind4Output(filename):
         for line in f:
             if not line.startswith("#"):
                 result = tuple(map(float, line.split()[1:]))
+                # Stop reading. In ctffind4-4.0.15 output file has additional lines.
+                break
         f.close()
     return result
 

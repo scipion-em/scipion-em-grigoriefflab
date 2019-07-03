@@ -30,6 +30,8 @@ from pyworkflow.utils import Environ
 from .constants import *
 
 
+__version__ = PLUGIN_VERSION
+
 _logo = "grigoriefflab_logo.png"
 _references = ['Mindell2003']  # FIXME: citations do not work if this is empty
 

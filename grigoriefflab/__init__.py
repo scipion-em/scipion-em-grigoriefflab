@@ -62,8 +62,7 @@ class Plugin(pyworkflow.em.Plugin):
             CTFTILT: [CTFTILT_BIN, CTFTILTMP_BIN]
         },
         CTFTILT: {
-            'DEFAULT': 'ctffind4-4.1.10',
-            'PATH': _getCtffind4Paths(),  # variable path, depending on 'bin'
+            'DEFAULT': 'ctffind-3.6',
             '': [CTFTILT_BIN, CTFTILTMP_BIN],  # default program, 1 or 2 exec
             CTFTILT: [CTFTILT_BIN, CTFTILTMP_BIN]
         },

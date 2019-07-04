@@ -18,7 +18,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Load constants, specially PLUGIN_VERSION
-exec(open(path.join(here, "spider", "constants.py")).read())
+exec(open(path.join(here, "grigoriefflab", "constants.py")).read())
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.

@@ -17,12 +17,15 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
+# Load constants, specially PLUGIN_VERSION
+exec(open(path.join(here, "spider", "constants.py")).read())
+
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
 
 setup(
     name='scipion-em-grigoriefflab',  # Required
-    version='1.0.5',  # Required
+    version=PLUGIN_VERSION,  # Required
     description='Grigoriefflab ready to use in scipion.',  # Required
     long_description=long_description,  # Optional
     url='https://github.com/scipion-em/scipion-em-grigoriefflab',  # Optional

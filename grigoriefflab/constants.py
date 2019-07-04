@@ -24,6 +24,9 @@
 # *
 # **************************************************************************
 
+# ------------------ Plugin (and Python module) version ------------------------
+PLUGIN_VERSION = '1.0.6'
+
 # ------------------ Program common names --------------------------------------
 CTFFIND = 'CTFFIND'
 CTFFIND4 = 'CTFFIND4'
@@ -44,6 +47,8 @@ MAGDISTCORR = 'MAGDISTCORR'
 
 V4_0_15 = '4.0.15'
 V4_1_10 = '4.1.10'
+V4_1_13 = '4.1.13'
+
 
 MAGDIST_HOME = 'MAGDIST_HOME'
 SUMMOVIE_HOME = 'SUMMOVIE_HOME'

@@ -76,6 +76,7 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
     # -------------------------- STEPS functions ------------------------------
     def _doCtfEstimation(self, mic, **kwargs):
         """ Run ctffind, 3 or 4, with required parameters """
+        micDir = self._getTmpPath('mic_%04d' % mic.getObjId())
         try:
             micFn = mic.getFileName()
             micDir = self._getTmpPath('mic_%04d' % mic.getObjId())
@@ -108,6 +109,9 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
                 **kwargs
             )
             self.runJob(program, args)
+
+            pw.utils.cleanPath(micDir)
+
         except Exception as ex:
             print >> sys.stderr, "ctffind has failed with micrograph %s" % micFnMrc
 

@@ -30,6 +30,8 @@ from pyworkflow.utils import Environ
 from .constants import *
 
 
+__version__ = PLUGIN_VERSION
+
 _logo = "grigoriefflab_logo.png"
 _references = ['Mindell2003']  # FIXME: citations do not work if this is empty
 
@@ -45,7 +47,7 @@ def _getHome(binaryKey, default, paths):
 
 
 def _getCtffind4Paths():
-    if os.path.exists(_getHome(CTFFIND4, 'ctffind4-4.1.10', ['bin', CTFFIND4_BIN])):
+    if os.path.exists(_getHome(CTFFIND4, 'ctffind4-4.1.13', ['bin', CTFFIND4_BIN])):
         return ['bin']
     return []
 
@@ -65,10 +67,10 @@ class Plugin(pyworkflow.em.Plugin):
             CTFTILT: [CTFTILT_BIN, CTFTILTMP_BIN]
         },
         CTFFIND4: {
-            'DEFAULT': 'ctffind4-4.1.10',
+            'DEFAULT': 'ctffind4-4.1.13',
             'PATH': _getCtffind4Paths(),  # variable path, depending on 'bin'
             '': [CTFFIND4_BIN],
-            'VERSIONS': ['4.0.15', '4.1.5', '4.1.8', V4_1_10]
+            'VERSIONS': ['4.0.15', '4.1.5', '4.1.8', V4_1_10, V4_1_13]
         },
         FREALIGN: {
             'DEFAULT': 'frealign-9.07',
@@ -165,6 +167,10 @@ class Plugin(pyworkflow.em.Plugin):
 
         env.addPackage('ctffind4', version='4.1.10',
                        tar='ctffind4-4.1.10.tgz',
+                       default=True)
+
+        env.addPackage('ctffind4', version='4.1.13',
+                       tar='ctffind4-4.1.13.tgz',
                        default=True)
 
         env.addPackage('summovie', version='1.0.2',

@@ -29,7 +29,7 @@ import pyworkflow.em as pwem
 import pyworkflow.protocol.params as params
 
 from grigoriefflab import Plugin
-from grigoriefflab.constants import (V4_0_15, V4_1_10, CTFFIND, CTFFIND4)
+from grigoriefflab.constants import (V4_0_15, V4_1_10, V4_1_13, CTFFIND, CTFFIND4)
 import grigoriefflab.convert as convert
 
 
@@ -192,48 +192,37 @@ class ProgramCtffind:
 %(maxDefocus)f
 %(step_focus)f"""
         v = self.getVersion()
-        if v in ['4.1.5', '4.1.8', V4_1_10]:
-            if self._findPhaseShift:
-                args += """
-no
-%(slowSearch)s
-yes
-%(astigmatism)f
-%(phaseShift)s
-%(minPhaseShift)f
-%(maxPhaseShift)f
-%(stepPhaseShift)f
-yes
-%(resamplePix)s
-eof
-"""
-            else:
-                args += """
+        if v in ['4.1.5', '4.1.8', V4_1_10, V4_1_13]:
+            args += """
 no
 %(slowSearch)s
 yes
 %(astigmatism)f
 %(phaseShift)s
 yes
-%(resamplePix)s
-eof
+%(resamplePix)s"""
+
+            # Extra options in 4.1.13
+            # Do you already know the defocus? [no]
+            # Desired number of parallel threads [1]
+            if v == V4_1_13:
+                args += """
+no
+1
 """
+        # TODO: Should we deprecate this version by now?
         elif v == V4_0_15:
-            if self._findPhaseShift:
-                args += """
+            args += """
 %(astigmatism)f
 %(phaseShift)s
-%(minPhaseShift)f
-%(maxPhaseShift)f
-%(stepPhaseShift)f
-eof
-"""
-            else:
-                args += """
-%(astigmatism)f
-%(phaseShift)s
-eof
 """
 
-        return args
+        if self._findPhaseShift:
+            args = args.replace('%(phaseShift)s',
+                                '%(phaseShift)s\n'
+                                '%(minPhaseShift)f\n'
+                                '%(maxPhaseShift)f\n'
+                                '%(stepPhaseShift)f')
+
+        return args + 'eof\n'
 

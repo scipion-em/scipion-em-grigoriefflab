@@ -6,6 +6,7 @@ https://github.com/pypa/sampleproject
 """
 
 # Always prefer setuptools over distutils
+from grigoriefflab import PLUGIN_VERSION
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open

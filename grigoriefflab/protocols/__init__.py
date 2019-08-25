@@ -24,13 +24,20 @@
 # *
 # **************************************************************************
 
-from protocol_ctffind import ProtCTFFind
-from protocol_ctftilt import ProtCTFTilt
-from protocol_refinement import ProtFrealign
-from protocol_magdist_estimate import ProtMagDistEst
-from protocol_magdist_correct import ProtMagDistCorr
-from protocol_magdist_correct_coords import ProtMagDistCorrCoord
-from protocol_frealign_base import ProtFrealignBase
-from protocol_ml_classification import ProtFrealignClassify
-from protocol_unblur import ProtUnblur
-from protocol_summovie import ProtSummovie
+from .protocol_ctffind import ProtCTFFind
+from .protocol_ctftilt import ProtCTFTilt
+from .protocol_refinement import ProtFrealign
+from .protocol_magdist_estimate import ProtMagDistEst
+from .protocol_magdist_correct import ProtMagDistCorr
+from .protocol_magdist_correct_coords import ProtMagDistCorrCoord
+from .protocol_frealign_base import ProtFrealignBase
+from .protocol_ml_classification import ProtFrealignClassify
+from .protocol_unblur import ProtUnblur
+from .protocol_summovie import ProtSummovie
+
+try:
+    from .protocol_ts_ctffind import ProtTsCtffind
+except ImportError:
+    raise ImportError(
+        'To use a Tomography protocol scipion-em-tomo plugin is required.'
+        ' See https://github.com/scipion-em/scipion-em-tomo for further details')

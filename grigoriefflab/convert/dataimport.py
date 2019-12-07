@@ -27,7 +27,7 @@
 import os
 
 import pyworkflow.utils as pwutils 
-from pyworkflow.em.data import CTFModel, SetOfParticles
+from pwem.objects import CTFModel, SetOfParticles
 from .convert import readCtfModel, ctffindOutputVersion, readSetOfParticles
 
 

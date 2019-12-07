@@ -27,12 +27,11 @@ import os
 from pyworkflow import VERSION_1_1
 import pyworkflow.protocol.params as params
 from pyworkflow.utils.properties import Message
-from pyworkflow.em.protocol import EMProtocol
+from pwem.protocols import EMProtocol
 
-#from grigoriefflab import validateMagDistorsionInstallation
 from grigoriefflab.convert import parseMagCorrInput, unDistortCoord
 from grigoriefflab import Plugin
-from grigoriefflab.constants import MAGDISTCORR, MAGDIST
+from grigoriefflab.constants import  MAGDIST
 
 
 class ProtMagDistCorrCoord(EMProtocol):

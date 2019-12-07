@@ -25,7 +25,7 @@
 # **************************************************************************
 
 from pyworkflow.tests import *
-from pyworkflow.em.protocol import (ProtImportMovies, ProtImportMicrographs,
+from pwem.protocols import (ProtImportMovies, ProtImportMicrographs,
                                     ProtImportCoordinates)
 from grigoriefflab.protocols import (ProtMagDistEst, ProtMagDistCorr,
                                      ProtMagDistCorrCoord)

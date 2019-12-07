@@ -28,14 +28,12 @@ This module implement some wizards
 """
 
 import os
-import Tkinter as tk
-import ttk
+import tkinter as tk
 
-from pyworkflow.em.constants import *
-import pyworkflow.gui.dialog as dialog
-from pyworkflow.em.wizard import *
+from pwem.constants import *
+from pwem.wizards import *
+from pyworkflow.wizard import Wizard
 
-from grigoriefflab.constants import *
 from grigoriefflab.protocols import (
     ProtFrealign, ProtFrealignClassify, ProtMagDistEst, ProtMagDistCorr,
     ProtCTFFind, ProtCTFTilt)

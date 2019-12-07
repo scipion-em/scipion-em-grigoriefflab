@@ -27,12 +27,15 @@
 This module contains the protocol to obtain a refined 3D reconstruction from a set of particles using Frealign
 """
 from os.path import exists
-import pyworkflow.em as em 
-from protocol_frealign_base import ProtFrealignBase
+
+from pwem.objects import Volume, SetOfParticles
+from pwem.protocols import ProtRefine3D
+
+from .protocol_frealign_base import ProtFrealignBase
 from grigoriefflab.convert import rowToAlignment, FrealignParFile
 
 
-class ProtFrealign(ProtFrealignBase, em.ProtRefine3D):
+class ProtFrealign(ProtFrealignBase, ProtRefine3D):
     """ Protocol to refine a 3D map using Frealign. The algorithms implemented
 are optimized to perform  efficiently the correction for the contrast
 transfer function of the microscope and refinement of three-dimensional
@@ -49,7 +52,7 @@ reconstructions.
         
         # Register output volume
         volFn = self._getFileName('iter_vol', iter=lastIter)
-        vol = em.Volume()
+        vol = Volume()
         vol.setFileName(volFn)
         vol.setSamplingRate(inputSet.getSamplingRate())
         mapHalf1 = self._getFileName('iter_vol1', iter=lastIter)
@@ -78,7 +81,7 @@ reconstructions.
     def _getIterData(self, it):
         data_sqlite = self._getFileName('data_scipion', iter=it)
         if not exists(data_sqlite):
-            iterImgSet = em.SetOfParticles(filename=data_sqlite)
+            iterImgSet = SetOfParticles(filename=data_sqlite)
             iterImgSet.copyInfo(self._getInputParticles())
             self._fillDataFromIter(iterImgSet, it)
             iterImgSet.write()

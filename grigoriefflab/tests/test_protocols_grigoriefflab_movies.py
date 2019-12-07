@@ -24,8 +24,7 @@
 # *  e-mail address 'scipion@cnb.csic.es'
 # *
 # **************************************************************************
-
-from pyworkflow.em import *
+from pwem.protocols import ProtImportMovies
 from pyworkflow.tests import *
 
 from grigoriefflab import *

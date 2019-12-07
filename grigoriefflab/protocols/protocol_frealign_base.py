@@ -34,8 +34,8 @@ from pyworkflow.protocol.constants import STEPS_PARALLEL, LEVEL_ADVANCED
 from pyworkflow.protocol.params import (StringParam, BooleanParam, IntParam,
                                         PointerParam, EnumParam, FloatParam,
                                         TextParam)
-from pyworkflow.em.protocol import EMProtocol
-from pyworkflow.em.convert import ImageHandler
+from pwem.protocols import EMProtocol
+from pwem.convert import ImageHandler
 
 from grigoriefflab import Plugin
 from grigoriefflab.convert import geometryFromMatrix
@@ -640,7 +640,7 @@ class ProtFrealignBase(EMProtocol):
         """
         iterDir = self._iterWorkingDir(1)
         program = "./block%03d.sh" % block
-        os.chmod(join(iterDir, program), 0775)
+        os.chmod(join(iterDir, program), 775)
         self.runJob(program, "", cwd=iterDir)
 
     def writeInitialAnglesStep(self):
@@ -1071,7 +1071,7 @@ eot
         file2 = self._getFileName('output_par', iter=iterN)
         if (self.mode.get()==0):
             inFile = self._getFileName('input_par_block', block= numberOfBlocks, iter=1, prevIter=0)
-            print inFile, file2
+            print(inFile, file2)
             copyFile(inFile,file2)
         else:
             if numberOfBlocks != 1:

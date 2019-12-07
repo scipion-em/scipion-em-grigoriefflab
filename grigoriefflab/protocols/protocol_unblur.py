@@ -24,19 +24,28 @@
 # **************************************************************************
 
 import os
-from itertools import izip
+try:
+ from itertools import izip
+except:
+    izip = zip
+
 from math import ceil
+from pwem import Domain
 
 import pyworkflow.utils as pwutils
-import pyworkflow.em as em
-from pyworkflow.em.data import MovieAlignment
-from pyworkflow.em.protocol import ProtAlignMovies
+from pwem.objects import MovieAlignment, Image
+from pwem.protocols import ProtAlignMovies
 import pyworkflow.protocol.params as params
 from pyworkflow.gui.plotter import Plotter
-writeShiftsMovieAlignment = pwutils.importFromPlugin('xmipp3.convert', 'writeShiftsMovieAlignment')
 from grigoriefflab import Plugin
 from grigoriefflab.convert import readShiftsMovieAlignment
 from grigoriefflab.constants import UNBLUR
+
+try:
+    writeShiftsMovieAlignment = Domain.importFromPlugin('xmipp3.convert',
+                                                        'writeShiftsMovieAlignment', doRaise=True)
+except Exception as e:
+    print("Xmipp plugin is does not installed...")
 
 
 class ProtUnblur(ProtAlignMovies):
@@ -200,7 +209,7 @@ class ProtUnblur(ProtAlignMovies):
         aveMicFn = movieBaseName + '_uncorrected_avg.mrc'
         
         if a0 > 1 or aN < lstFrame:
-            from pyworkflow.em import ImageHandler
+            from pwem.convert import ImageHandler
             ih = ImageHandler()
             movieInputFn = movie.getFileName()
             
@@ -450,11 +459,11 @@ eof
 
     def _preprocessOutputMicrograph(self, mic, movie):
         if self.doComputePSD:
-            mic.psdCorr = em.Image(location=self._getPsdCorr(movie))
-            mic.psdJpeg = em.Image(location=self._getPsdJpeg(movie))
-        mic.plotGlobal = em.Image(location=self._getPlotGlobal(movie))
+            mic.psdCorr = Image(location=self._getPsdCorr(movie))
+            mic.psdJpeg = Image(location=self._getPsdJpeg(movie))
+        mic.plotGlobal = Image(location=self._getPlotGlobal(movie))
         if self._doComputeMicThumbnail():
-            mic.thumbnail = em.Image(location=self._getOutputMicThumbnail(movie))
+            mic.thumbnail = Image(location=self._getOutputMicThumbnail(movie))
 
     def _getNameExt(self, movie, postFix, ext, extra=False):
         fn = self._getMovieRoot(movie) + postFix + '.' + ext

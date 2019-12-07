@@ -30,11 +30,11 @@ import pyworkflow.protocol.params as params
 import pyworkflow.protocol.constants as cons
 import pyworkflow.utils.path as pwutils
 from pyworkflow import VERSION_1_1
-from pyworkflow.em.protocol import ProtPreprocessMicrographs
+from pwem.protocols import ProtPreprocessMicrographs
 
 from grigoriefflab import Plugin
 from grigoriefflab.convert import parseMagEstOutput
-from grigoriefflab.constants import MAGDIST, MAGDISTEST, MAGDISTEST_BIN
+from grigoriefflab.constants import MAGDIST, MAGDISTEST
 
 
 class ProtMagDistEst(ProtPreprocessMicrographs):

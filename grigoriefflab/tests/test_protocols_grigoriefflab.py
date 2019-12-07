@@ -23,10 +23,15 @@
 # *  e-mail address 'scipion@cnb.csic.es'
 # *
 # **************************************************************************
+import numpy as np
+try:
+ from itertools import izip
+except:
+    izip = zip
 
-from pyworkflow.em import *
+from pwem.objects import SetOfParticles
 from pyworkflow.tests import *
-from pyworkflow.em.protocol import ProtImportParticles, ProtImportVolumes
+from pwem.protocols import (ProtImportParticles, ProtImportVolumes, ProtImportMicrographs)
 
 from grigoriefflab import *
 from grigoriefflab.protocols import *

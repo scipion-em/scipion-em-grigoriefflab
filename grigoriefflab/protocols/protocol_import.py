@@ -25,8 +25,8 @@
 # **************************************************************************
 
 from pyworkflow.protocol.params import PathParam, PointerParam
-from pyworkflow.em.data import CTFModel
-from pyworkflow.em.protocol import ProtImportFiles, ProtCTFMicrographs
+from pwem.objects import CTFModel
+from pwem.protocols import ProtImportFiles, ProtCTFMicrographs
 
 from grigoriefflab.convert import parseCtffindOutput
 

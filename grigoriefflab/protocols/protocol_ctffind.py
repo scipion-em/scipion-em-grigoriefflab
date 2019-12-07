@@ -29,13 +29,17 @@ import os
 import sys
 
 import pyworkflow as pw
-import grigoriefflab.convert as convert
+from pwem.convert import ImageHandler, DT_FLOAT
+from pwem.objects import CTFModel
+from pwem.protocols import ProtCTFMicrographs
+from pyworkflow.utils import makePath
+
 from grigoriefflab.constants import *
 from .program_ctffind import ProgramCtffind
 from grigoriefflab import Plugin
 
 
-class ProtCTFFind(pw.em.ProtCTFMicrographs):
+class ProtCTFFind(ProtCTFMicrographs):
     """
     Estimates CTF on a set of micrographs
     using either ctffind3 or ctffind4 program.
@@ -63,14 +67,14 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
         return missingPaths
 
     def _defineParams(self, form):
-        pw.em.ProtCTFMicrographs._defineParams(self, form)
+        ProtCTFMicrographs._defineParams(self, form)
         self._defineStreamingParams(form)
 
     def _defineProcessParams(self, form):
         ProgramCtffind.defineFormParams(form)
 
     def _defineCtfParamsDict(self):
-        pw.em.ProtCTFMicrographs._defineCtfParamsDict(self)
+        ProtCTFMicrographs._defineCtfParamsDict(self)
         self._ctfProgram = ProgramCtffind(self)
 
     # -------------------------- STEPS functions ------------------------------
@@ -81,11 +85,11 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
             micFn = mic.getFileName()
             micDir = self._getTmpPath('mic_%04d' % mic.getObjId())
             # Create micrograph dir
-            pw.utils.makePath(micDir)
+            makePath(micDir)
             downFactor = self.ctfDownFactor.get()
             micFnMrc = os.path.join(micDir, pw.utils.replaceBaseExt(micFn, 'mrc'))
 
-            ih = pw.em.ImageHandler()
+            ih = ImageHandler()
 
             if not ih.existsLocation(micFn):
                 raise Exception("Missing input micrograph %s" % micFn)
@@ -95,10 +99,10 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
                 # that cannot be written (such as dm3)
                 ih.scaleFourier(micFn, micFnMrc, downFactor)
             else:
-                ih.convert(micFn, micFnMrc, pw.em.DT_FLOAT)
+                ih.convert(micFn, micFnMrc, DT_FLOAT)
 
         except Exception as ex:
-            print >> sys.stderr, "Some error happened: %s" % ex
+            sys.stderr.write("Some error happened: %s" % ex)
             import traceback
             traceback.print_exc()
         try:
@@ -113,7 +117,7 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
             pw.utils.cleanPath(micDir)
 
         except Exception as ex:
-            print >> sys.stderr, "ctffind has failed with micrograph %s" % micFnMrc
+            sys.stderr.write("ctffind has failed with micrograph %s" % micFnMrc)
 
     def _estimateCTF(self, mic, *args):
         self._doCtfEstimation(mic)
@@ -202,7 +206,7 @@ class ProtCTFFind(pw.em.ProtCTFMicrographs):
         return self._ctfProgram.parseOutput(filename)
 
     def _getCTFModel(self, defocusU, defocusV, defocusAngle, psdFile):
-        ctf = pw.em.CTFModel()
+        ctf = CTFModel()
         ctf.setStandardDefocus(defocusU, defocusV, defocusAngle)
         ctf.setPsdFile(psdFile)
 

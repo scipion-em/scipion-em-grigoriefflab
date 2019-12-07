@@ -29,7 +29,7 @@ from os.path import exists, realpath, abspath
 import pyworkflow.protocol.params as params
 import pyworkflow.protocol.constants as cons
 import pyworkflow.utils.path as pwutils
-from pyworkflow.em.protocol import ProtAlignMovies, ProtProcessMovies
+from pwem.protocols import ProtAlignMovies
 
 from grigoriefflab import Plugin
 from grigoriefflab.constants import SUMMOVIE

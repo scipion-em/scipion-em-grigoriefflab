@@ -29,11 +29,11 @@ from os.path import exists, relpath
 from pyworkflow.utils import cleanPath, removeExt
 from pyworkflow.viewer import (Viewer, ProtocolViewer,
                                DESKTOP_TKINTER, WEB_DJANGO)
-from pyworkflow.em.viewers import DataView, CtfView, EmPlotter
-import pyworkflow.em.viewers.showj as showj
+from pwem.viewers import DataView, CtfView, EmPlotter
+import pwem.viewers.showj as showj
 import pyworkflow.em as em
-from pyworkflow.em.viewers.views import ObjectView, Classes3DView
-from pyworkflow.em.viewers.viewer_chimera import ChimeraView, ChimeraClientView
+from pwem.viewers.views import ObjectView, Classes3DView
+from pwem.viewers.viewer_chimera import ChimeraView, ChimeraClientView
 
 from pyworkflow.gui.project import ProjectWindow
 from pyworkflow.protocol.constants import LEVEL_ADVANCED

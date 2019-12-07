@@ -32,8 +32,8 @@ from pyworkflow.object import Set
 import pyworkflow.protocol.params as params
 import pyworkflow.protocol.constants as cons
 import pyworkflow.utils.path as pwutils
-from pyworkflow.em.protocol import ProtProcessMovies
-from pyworkflow.em.data import SetOfMovies
+from pwem.protocols import ProtProcessMovies
+from pwem.objects import SetOfMovies
 
 from grigoriefflab import Plugin
 from grigoriefflab.constants import MAGDIST, MAGDISTCORR

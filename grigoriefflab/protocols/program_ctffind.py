@@ -25,12 +25,12 @@
 # *
 # **************************************************************************
 
-import pyworkflow.em as pwem
 import pyworkflow.protocol.params as params
+from pwem.objects import CTFModel
 
 from grigoriefflab import Plugin
-from grigoriefflab.constants import (V4_0_15, V4_1_10, V4_1_13, CTFFIND, CTFFIND4)
-import grigoriefflab.convert as convert
+from grigoriefflab.constants import (V4_0_15, V4_1_10, V4_1_13, CTFFIND4)
+from grigoriefflab.convert.convert import parseCtffind4Output, readCtfModel
 
 
 class ProgramCtffind:
@@ -133,14 +133,14 @@ class ProgramCtffind:
         """ Retrieve defocus U, V and angle from the
         output file of the program execution.
         """
-        return convert.parseCtffind4Output(filename)
+        return parseCtffind4Output(filename)
 
     def parseOutputAsCtf(self, filename, psdFile=None):
         """ Parse the output file and build the CTFModel object
         with the values.
         """
-        ctf = pwem.CTFModel()
-        convert.readCtfModel(ctf, filename, ctf4=True)
+        ctf = CTFModel()
+        readCtfModel(ctf, filename, ctf4=True)
         if psdFile:
             ctf.setPsdFile(psdFile)
 

@@ -27,8 +27,10 @@
 import os
 import sys
 import pyworkflow.utils as pwutils
-import pyworkflow.em as em
 import pyworkflow.protocol.params as params
+from pwem.convert import ImageHandler, DT_FLOAT
+from pwem.objects import CTFModel
+from pwem.protocols import ProtCTFMicrographs
 from pyworkflow import VERSION_1_2
 
 from grigoriefflab import Plugin
@@ -36,7 +38,7 @@ from grigoriefflab.constants import (CTFFIND, CTFTILT)
 from grigoriefflab.convert import readCtfModel, parseCtftiltOutput
 
 
-class ProtCTFTilt(em.ProtCTFMicrographs):
+class ProtCTFTilt(ProtCTFMicrographs):
     """
     Estimates CTF on a set of tilted micrographs
     using ctftilt program.
@@ -102,18 +104,18 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
             if downFactor != 1:
                 # Replace extension by 'mrc' because there are some formats
                 # that cannot be written (such as dm3)
-                em.ImageHandler().scaleFourier(micFn, micFnMrc, downFactor)
+                ImageHandler().scaleFourier(micFn, micFnMrc, downFactor)
                 self._params['scannedPixelSize'] = scannedPixelSize * downFactor
             else:
-                ih = em.ImageHandler()
+                ih = ImageHandler()
                 if ih.existsLocation(micFn):
                     micFnMrc = self._getTmpPath(pwutils.replaceBaseExt(micFn, "mrc"))
-                    ih.convert(micFn, micFnMrc, em.DT_FLOAT)
+                    ih.convert(micFn, micFnMrc, DT_FLOAT)
                 else:
-                    print >> sys.stderr, "Missing input micrograph %s" % micFn
+                    sys.stderr.write("Missing input micrograph %s" % micFn)
 
         except Exception as ex:
-            print >> sys.stderr, "Some error happened: %s" % ex
+            sys.stderr.write("Some error happened: %s" % ex)
             import traceback
             traceback.print_exc()
 
@@ -123,7 +125,7 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
                                              ctftiltPSD=self._getPsdPath(micDir))
             self.runJob(program, args)
         except Exception as ex:
-            print >> sys.stderr, "ctftilt has failed with micrograph %s" % micFnMrc
+            sys.stderr.write("ctftilt has failed with micrograph %s" % micFnMrc)
 
         # Let's notify that this micrograph have been processed
         # just creating an empty file at the end (after success or failure)
@@ -144,14 +146,14 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
 
         pwutils.cleanPath(out)
         micFnMrc = self._getTmpPath(pwutils.replaceBaseExt(micFn, "mrc"))
-        em.ImageHandler().convert(micFn, micFnMrc, em.DT_FLOAT)
+        ImageHandler().convert(micFn, micFnMrc, DT_FLOAT)
         pwutils.cleanPath(psdFile)
         try:
             program, args = self._getRecalCommand(
                 ctfModel, micFn=micFnMrc, ctftiltOut=out, ctftiltPSD=psdFile)
             self.runJob(program, args)
         except Exception as ex:
-            print >> sys.stderr, "ctftilt has failed with micrograph %s" % micFnMrc
+            sys.stderr.write("ctftilt has failed with micrograph %s" % micFnMrc)
         pwutils.cleanPattern(micFnMrc)
 
     def _createCtfModel(self, mic, updateSampling=True):
@@ -166,7 +168,7 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
         out = self._getCtfOutPath(micDir)
         psdFile = self._getPsdPath(micDir)
 
-        ctfModel = em.CTFModel()
+        ctfModel = CTFModel()
         readCtfModel(ctfModel, out, ctf4=False, ctfTilt=True)
         ctfModel.setPsdFile(psdFile)
         ctfModel.setMicrograph(mic)
@@ -225,7 +227,7 @@ class ProtCTFTilt(em.ProtCTFMicrographs):
         # get the size and the image of psd
 
         imgPsd = ctfModel.getPsdFile()
-        imgh = em.ImageHandler()
+        imgh = ImageHandler()
         size, _, _, _ = imgh.getDimensions(imgPsd)
 
         mic = ctfModel.getMicrograph()
@@ -277,14 +279,14 @@ eof
         return parseCtftiltOutput(filename)
 
     def _getCTFModel(self, defocusU, defocusV, defocusAngle, psdFile):
-        ctf = em.CTFModel()
+        ctf = CTFModel()
         ctf.setStandardDefocus(defocusU, defocusV, defocusAngle)
         ctf.setPsdFile(psdFile)
 
         return ctf
 
     def _summary(self):
-        summary = em.ProtCTFMicrographs._summary(self)
+        summary = ProtCTFMicrographs._summary(self)
         if hasattr(self, 'outputCTF'):
             ctfs = self.outputCTF
             for ctf in ctfs:

@@ -25,8 +25,9 @@
 # **************************************************************************
 
 import os
-import pyworkflow.em
-from pyworkflow.utils import Environ
+
+import pwem as em
+
 from .constants import *
 
 
@@ -54,7 +55,7 @@ def _getCtffind4Paths():
 
 # This is kind of special plugin since the program binaries are distributed
 # separated. So, there is not a single "HOME" directory and a single version.
-class Plugin(pyworkflow.em.Plugin):
+class Plugin(em.Plugin):
     __programs = {
         CTFFIND: {
             'DEFAULT': 'ctffind-3.6',
@@ -192,7 +193,7 @@ class Plugin(pyworkflow.em.Plugin):
                        default=True)
 
 
-pyworkflow.em.Domain.registerPlugin(__name__)
+em.Domain.registerPlugin(__name__)
 
 # TODO: Remove the following lines when no longer needed
 #

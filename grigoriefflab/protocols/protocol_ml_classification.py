@@ -30,7 +30,7 @@ This module contains the protocol to classify a set of particles using Frealign
 import os
 from pyworkflow.utils import copyFile
 import pyworkflow.em as em
-from pyworkflow.em.data import Volume
+from pwem.objects import Volume
 
 from grigoriefflab import Plugin
 from grigoriefflab.convert import rowToAlignment, OrderedDict, HEADER_COLUMNS

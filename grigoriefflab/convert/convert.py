@@ -31,16 +31,18 @@ This module contains converter functions that will serve to:
 
 import os
 import re
-from itertools import izip
+
+try:
+ from itertools import izip
+except:
+    izip = zip
+
 from collections import OrderedDict
 import numpy as np
-
-#from numpy import rad2deg, deg2rad
-#from np.linalg import inv
+from pwem.objects import Transform, CTFModel, ALIGN_PROJ
 
 from pyworkflow.object import Float
-import pyworkflow.em as em
-import pyworkflow.em.convert.transformations as transformations
+import pwem.convert.transformations as transformations
 
 
 HEADER_COLUMNS = ['INDEX', 'PSI', 'THETA', 'PHI', 'SHX', 'SHY', 'MAG',
@@ -88,10 +90,10 @@ def readSetOfParticles(inputSet, outputSet, parFileName):
         # JMRT: Since the CTF will be set, we can setup
         # an empty CTFModel object
         if not particle.hasCTF():
-            particle.setCTF(em.CTFModel())
+            particle.setCTF(CTFModel())
         rowToCtfModel(row, particle.getCTF())
         outputSet.append(particle)
-    outputSet.setAlignment(em.ALIGN_PROJ)
+    outputSet.setAlignment(ALIGN_PROJ)
 
 
 def rowToAlignment(alignmentRow, samplingRate):
@@ -101,7 +103,7 @@ def rowToAlignment(alignmentRow, samplingRate):
     """
     angles = np.zeros(3)
     shifts = np.zeros(3)
-    alignment = em.Transform()
+    alignment = Transform()
     # PSI   THETA     PHI       SHX       SHY
     angles[0] = float(alignmentRow.get('PSI'))
     angles[1] = float(alignmentRow.get('THETA'))

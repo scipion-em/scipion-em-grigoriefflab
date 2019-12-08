@@ -26,12 +26,13 @@
 
 import os
 from os.path import exists, relpath
+
+from pwem.objects import SetOfClasses3D
 from pyworkflow.utils import cleanPath, removeExt
 from pyworkflow.viewer import (Viewer, ProtocolViewer,
                                DESKTOP_TKINTER, WEB_DJANGO)
 from pwem.viewers import DataView, CtfView, EmPlotter
 import pwem.viewers.showj as showj
-import pyworkflow.em as em
 from pwem.viewers.views import ObjectView, Classes3DView
 from pwem.viewers.viewer_chimera import ChimeraView, ChimeraClientView
 
@@ -482,7 +483,7 @@ Examples:
             cleanPath(dataClasses)
         
         if not exists(dataClasses):
-            clsSet = em.SetOfClasses3D(filename=dataClasses)
+            clsSet = SetOfClasses3D(filename=dataClasses)
             clsSet.setImages(self.protocol._getInputParticles())
             if self.protocol.doContinue:
                 numberOfRef = self.protocol.continueRun.get().numberOfClasses.get()

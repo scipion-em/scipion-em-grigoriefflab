@@ -28,8 +28,10 @@ This module contains the protocol to classify a set of particles using Frealign
 """
 
 import os
+
+from pwem.convert import ImageHandler
+from pwem.protocols import ProtClassify3D
 from pyworkflow.utils import copyFile
-import pyworkflow.em as em
 from pwem.objects import Volume
 
 from grigoriefflab import Plugin
@@ -38,7 +40,7 @@ from grigoriefflab.protocols import ProtFrealignBase
 from grigoriefflab.constants import FREALIGN, RSAMPLE, CALC_OCC
 
 
-class ProtFrealignClassify(ProtFrealignBase, em.ProtClassify3D):
+class ProtFrealignClassify(ProtFrealignBase, ProtClassify3D):
     """ Protocol to classify 3D using Frealign. Frealign employs
 maximum likelihood classification for single particle electron
 cryo-microscopy.
@@ -158,7 +160,7 @@ marginal likelihood.
             refVol = self._getFileName('ref_vol', iter=iterN) # reference volume of the step.
             #TODO check if the input is already a single mrc stack
             self.writeParticlesByMic(imgFn)
-            em.ImageHandler().convert(vol.getLocation(), volFn) # convert the reference volume into a mrc volume
+            ImageHandler().convert(vol.getLocation(), volFn) # convert the reference volume into a mrc volume
             copyFile(volFn, refVol)  #Copy the initial volume in the current directory.
             
         for ref in self._allRefs():

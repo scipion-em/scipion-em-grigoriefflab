@@ -37,5 +37,9 @@ setup(
     packages=find_packages(),
     package_data={  # Optional
        'grigoriefflab': ['grigoriefflab_logo.png', 'protocols.conf'],
-    }
+
+    },
+    entry_points={
+            'pyworkflow.plugin': 'grigoriefflab = grigoriefflab'
+        },
 )

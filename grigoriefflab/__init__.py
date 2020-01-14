@@ -193,8 +193,6 @@ class Plugin(em.Plugin):
                        default=True)
 
 
-em.Domain.registerPlugin(__name__)
-
 # TODO: Remove the following lines when no longer needed
 #
 # CTFFIND_PATH = join(os.environ[CTFFIND_HOME], CTFFIND3)

@@ -213,7 +213,7 @@ class ProtCTFFind(ProtCTFMicrographs):
         return ctf
 
     def _summary(self):
-        summary = pw.em.ProtCTFMicrographs._summary(self)
+        summary = ProtCTFMicrographs._summary(self)
         if self.useCtffind4 and ProgramCtffind.getVersion() == '4.1.5':
             summary.append("NOTE: ctffind4.1.5 finishes correctly (all output "
                            "is generated properly), but returns an error code. "

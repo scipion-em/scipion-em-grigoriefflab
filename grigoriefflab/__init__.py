@@ -27,6 +27,7 @@
 import os
 
 import pwem as em
+import pyworkflow as pw
 
 from .constants import *
 
@@ -42,8 +43,9 @@ def _getHome(binaryKey, default, paths):
     the default value will be used from EM_ROOT.
     Can join extra paths
     """
+    emRoot = pw.Config.SCIPION_EM_ROOT
     home = os.environ.get('%s_HOME' % binaryKey,
-                          os.path.join(os.environ['EM_ROOT'], default))
+                          os.path.join(emRoot, default))
     return os.path.join(home, *paths)
 
 

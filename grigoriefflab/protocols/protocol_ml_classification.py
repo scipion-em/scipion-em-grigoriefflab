@@ -29,7 +29,7 @@ This module contains the protocol to classify a set of particles using Frealign
 
 import os
 
-from pwem.convert import ImageHandler
+from pwem.emlib.image import ImageHandler
 from pwem.protocols import ProtClassify3D
 from pyworkflow.utils import copyFile
 from pwem.objects import Volume

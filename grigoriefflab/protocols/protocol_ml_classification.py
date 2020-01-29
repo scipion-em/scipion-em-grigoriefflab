@@ -362,7 +362,7 @@ marginal likelihood.
         prevIter = iterN -1
         file1 = self._getFileName('output_par_class', iter=prevIter, ref=ref)
         if numberOfBlocks != 1:
-            for block in range(1, numberOfBlocks + 1):
+            for block in range(1, int(numberOfBlocks) + 1):
                 f1 = open(file1)
                 file2 = self._getFileName('input_par_block_class',prevIter=prevIter, iter=iterN, ref=ref, block=block)
                 f2 = open(file2, 'w+')

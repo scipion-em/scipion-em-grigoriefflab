@@ -688,7 +688,8 @@ class ProtFrealignBase(EMProtocol):
 
         paramDic = self._setParamsRefineParticles(iterN, block)
 
-        paramsRefine = dict(paramsDic.items() + paramDic.items() + param.items())
+        paramsRefine = dict(list(paramsDic.items()) +
+                            list(paramDic.items()) + list(param.items()))
         args = self._prepareCommand()
 
         if self.mode.get() != 0:

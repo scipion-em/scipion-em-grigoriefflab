@@ -408,7 +408,7 @@ eot
 
     def _selBlocks(self, blocks):
         """ Iterate over all numberOfCPUs. """
-        for i in range(1, blocks+1):
+        for i in range(1, int(blocks)+1):
             yield i
     
     def _particlesInBlock(self, block, numberOfBlocks):

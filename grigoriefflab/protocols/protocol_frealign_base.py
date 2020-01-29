@@ -603,7 +603,8 @@ class ProtFrealignBase(EMProtocol):
             params['initParticle'] = initPart
             params['finalParticle'] = lastPart
             paramDic = self._setParamsRefineParticles(iterN, block)
-            paramsRefine = dict(paramsDic.items() + params.items() + paramDic.items())
+            paramsRefine = dict(list(paramsDic.items()) +
+                                list(params.items()) + list(paramDic.items()))
             f = self.__openParamFile(block, paramsRefine)
 
             # ToDo: Implement a better method to get the info particles.
@@ -688,7 +689,8 @@ class ProtFrealignBase(EMProtocol):
 
         paramDic = self._setParamsRefineParticles(iterN, block)
 
-        paramsRefine = dict(paramsDic.items() + paramDic.items() + param.items())
+        paramsRefine = dict(list(paramsDic.items()) +
+                            list(paramDic.items()) + list(param.items()))
         args = self._prepareCommand()
 
         if self.mode.get() != 0:
@@ -720,7 +722,7 @@ class ProtFrealignBase(EMProtocol):
 
         params2 = self._setParams3DR(iterN)
 
-        params3DR = dict(paramsDic.items() + params2.items())
+        params3DR = dict(list(paramsDic.items()) + list(params2.items()))
 
         args = self._prepareCommand()
         iterDir = self._iterWorkingDir(iterN)
@@ -1166,7 +1168,7 @@ eot
         colBlock = numbOfMIcs / numberOfBlocks
         # Create a list with the number of micrographs assigned
         # to each block, initially equally distributed
-        blockMics = [colBlock] * numberOfBlocks
+        blockMics = [colBlock] * int(numberOfBlocks)
         # Now assign the particles in the rest
         for i, v in enumerate(blockMics):
             if i < restBlock:

@@ -26,8 +26,7 @@
 
 import os
 
-import pwem as em
-
+import pwem
 from .constants import *
 
 
@@ -43,7 +42,7 @@ def _getHome(binaryKey, default, paths):
     Can join extra paths
     """
     home = os.environ.get('%s_HOME' % binaryKey,
-                          os.path.join(os.environ['EM_ROOT'], default))
+                          os.path.join(pwem.Config.EM_ROOT, default))
     return os.path.join(home, *paths)
 
 
@@ -55,7 +54,7 @@ def _getCtffind4Paths():
 
 # This is kind of special plugin since the program binaries are distributed
 # separated. So, there is not a single "HOME" directory and a single version.
-class Plugin(em.Plugin):
+class Plugin(pwem.Plugin):
     __programs = {
         CTFFIND: {
             'DEFAULT': 'ctffind-3.6',
@@ -192,40 +191,3 @@ class Plugin(em.Plugin):
                        tar='mag_distortion-1.0.1.tgz',
                        default=True)
 
-
-# TODO: Remove the following lines when no longer needed
-#
-# CTFFIND_PATH = join(os.environ[CTFFIND_HOME], CTFFIND3)
-# CTFFINDMP_PATH = join(os.environ[CTFFIND_HOME], CTFFIND3MP)
-# CTFFIND4_PATH = _getCtffind4()
-#
-# CTFTILT_PATH = join(os.environ[CTFFIND_HOME], CTFTILT)
-# CTFTILTMP_PATH = join(os.environ[CTFFIND_HOME], CTFTILTMP)
-#
-# FREALIGN_HOME = _getHome(FREALIGN_HOME, 'frealign')
-# FREALIGN_PATH = join(FREALIGN_HOME, 'bin', FREALIGN)
-# FREALIGNMP_PATH = join(FREALIGN_HOME, 'bin', FREALIGNMP)
-#
-# CALC_OCC_PATH = join(FREALIGN_HOME, 'bin', CALC_OCC)
-# RSAMPLE_PATH = join(FREALIGN_HOME, 'bin', RSAMPLE)
-#
-# MAGDIST_HOME = _getHome(MAGDIST_HOME, 'mag_distortion')
-# MAGDISTEST_PATH = join(MAGDIST_HOME, 'bin', MAGDISTEST_BIN)
-# MAGDISTCORR_PATH = join(MAGDIST_HOME, 'bin', MAGDISTCORR_BIN)
-#
-# UNBLUR_PATH = join(_getHome(UNBLUR_HOME, 'unblur'), 'bin', UNBLUR_BIN)
-# SUMMOVIE_PATH = join(_getHome(SUMMOVIE_HOME, 'summovie'), 'bin', SUMMOVIE_BIN)
-#
-#
-# def validateMagDistorsionInstallation():
-#     """ Check if the installation of this protocol is correct.
-#     Can't rely on package function since this is a "multi package" package
-#     Returning an empty list means that the installation is correct
-#     and there are not errors. If some errors are found, a list with
-#     the error messages will be returned.
-#     """
-#     missingPaths = []
-#
-#     if not os.path.exists(MAGDIST_HOME):
-#         missingPaths.append("%s : %s" % (MAGDIST_HOME, MAGDIST_HOME))
-#     return missingPaths

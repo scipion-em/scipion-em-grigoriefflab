@@ -189,7 +189,9 @@ marginal likelihood.
         
         paramClassRefDic = self._setParamsClassRefineParticles(iterN, ref, block)
         
-        paramsRefine = dict(paramsDic.items() + paramClassRefDic.items() + inOutParam.items())
+        paramsRefine = dict(list(paramsDic.items()) +
+                            list(paramClassRefDic.items()) +
+                            list(inOutParam.items()))
         
         args = self._prepareCommand()
         
@@ -213,7 +215,7 @@ marginal likelihood.
 
         params2 = self._setParams3DR(iterN, ref)
         
-        params3DR = dict(paramsDic.items() + params2.items())
+        params3DR = dict(list(paramsDic.items()) + list(params2.items()))
         
         args = self._prepareCommand()
         # frealign program is already in the args script, that's why runJob('')
@@ -360,7 +362,7 @@ marginal likelihood.
         prevIter = iterN -1
         file1 = self._getFileName('output_par_class', iter=prevIter, ref=ref)
         if numberOfBlocks != 1:
-            for block in range(1, numberOfBlocks + 1):
+            for block in range(1, int(numberOfBlocks) + 1):
                 f1 = open(file1)
                 file2 = self._getFileName('input_par_block_class',prevIter=prevIter, iter=iterN, ref=ref, block=block)
                 f2 = open(file2, 'w+')
@@ -408,7 +410,7 @@ eot
 
     def _selBlocks(self, blocks):
         """ Iterate over all numberOfCPUs. """
-        for i in range(1, blocks+1):
+        for i in range(1, int(blocks)+1):
             yield i
     
     def _particlesInBlock(self, block, numberOfBlocks):
@@ -417,7 +419,7 @@ eot
         blockParticles = self._particlesPerBlock(numberOfBlocks, sortedMicIdList)
         initPart = 0
         lastPart = 0
-        for i in range(block):
+        for i in range(int(block)):
             initPart = lastPart + 1
             lastPart = lastPart + blockParticles[i]
         

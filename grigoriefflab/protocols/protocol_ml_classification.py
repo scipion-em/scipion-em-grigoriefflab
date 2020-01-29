@@ -189,7 +189,9 @@ marginal likelihood.
         
         paramClassRefDic = self._setParamsClassRefineParticles(iterN, ref, block)
         
-        paramsRefine = dict(paramsDic.items() + paramClassRefDic.items() + inOutParam.items())
+        paramsRefine = dict(list(paramsDic.items()) +
+                            list(paramClassRefDic.items()) +
+                            list(inOutParam.items()))
         
         args = self._prepareCommand()
         
@@ -213,7 +215,7 @@ marginal likelihood.
 
         params2 = self._setParams3DR(iterN, ref)
         
-        params3DR = dict(paramsDic.items() + params2.items())
+        params3DR = dict(list(paramsDic.items()) + list(params2.items()))
         
         args = self._prepareCommand()
         # frealign program is already in the args script, that's why runJob('')

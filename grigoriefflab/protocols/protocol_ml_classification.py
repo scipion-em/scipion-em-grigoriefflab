@@ -419,7 +419,7 @@ eot
         blockParticles = self._particlesPerBlock(numberOfBlocks, sortedMicIdList)
         initPart = 0
         lastPart = 0
-        for i in range(block):
+        for i in range(int(block)):
             initPart = lastPart + 1
             lastPart = lastPart + blockParticles[i]
         

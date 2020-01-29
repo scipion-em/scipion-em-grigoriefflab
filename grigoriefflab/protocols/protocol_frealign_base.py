@@ -1168,7 +1168,7 @@ eot
         colBlock = numbOfMIcs / numberOfBlocks
         # Create a list with the number of micrographs assigned
         # to each block, initially equally distributed
-        blockMics = [colBlock] * numberOfBlocks
+        blockMics = [colBlock] * int(numberOfBlocks)
         # Now assign the particles in the rest
         for i, v in enumerate(blockMics):
             if i < restBlock:

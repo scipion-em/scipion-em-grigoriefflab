@@ -29,7 +29,7 @@ import os
 import sys
 
 import pyworkflow as pw
-from pwem.convert import ImageHandler, DT_FLOAT
+from pwem.emlib.image import ImageHandler, DT_FLOAT
 from pwem.objects import CTFModel
 from pwem.protocols import ProtCTFMicrographs
 from pyworkflow.utils import makePath

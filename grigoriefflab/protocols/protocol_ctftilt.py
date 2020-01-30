@@ -28,7 +28,7 @@ import os
 import sys
 import pyworkflow.utils as pwutils
 import pyworkflow.protocol.params as params
-from pwem.convert import ImageHandler, DT_FLOAT
+from pwem.emlib.image import ImageHandler, DT_FLOAT
 from pwem.objects import CTFModel
 from pwem.protocols import ProtCTFMicrographs
 from pyworkflow import VERSION_1_2

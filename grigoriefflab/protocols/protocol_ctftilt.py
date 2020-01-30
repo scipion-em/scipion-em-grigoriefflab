@@ -28,7 +28,7 @@ import os
 import sys
 import pyworkflow.utils as pwutils
 import pyworkflow.protocol.params as params
-from pwem.emlib.image import ImageHandler, DT_FLOAT
+from pwem import emlib
 from pwem.objects import CTFModel
 from pwem.protocols import ProtCTFMicrographs
 from pyworkflow import VERSION_1_2
@@ -101,16 +101,17 @@ class ProtCTFTilt(ProtCTFMicrographs):
             scannedPixelSize = self.inputMicrographs.get().getScannedPixelSize()
             micFnMrc = self._getTmpPath(pwutils.replaceBaseExt(micFn, 'mrc'))
 
+            ih = emlib.image.ImageHandler()
+
             if downFactor != 1:
                 # Replace extension by 'mrc' because there are some formats
                 # that cannot be written (such as dm3)
-                ImageHandler().scaleFourier(micFn, micFnMrc, downFactor)
+                ih.scaleFourier(micFn, micFnMrc, downFactor)
                 self._params['scannedPixelSize'] = scannedPixelSize * downFactor
             else:
-                ih = ImageHandler()
                 if ih.existsLocation(micFn):
                     micFnMrc = self._getTmpPath(pwutils.replaceBaseExt(micFn, "mrc"))
-                    ih.convert(micFn, micFnMrc, DT_FLOAT)
+                    ih.convert(micFn, micFnMrc, emlib.DT_FLOAT)
                 else:
                     sys.stderr.write("Missing input micrograph %s" % micFn)
 
@@ -146,7 +147,7 @@ class ProtCTFTilt(ProtCTFMicrographs):
 
         pwutils.cleanPath(out)
         micFnMrc = self._getTmpPath(pwutils.replaceBaseExt(micFn, "mrc"))
-        ImageHandler().convert(micFn, micFnMrc, DT_FLOAT)
+        emlib.ImageHandler().convert(micFn, micFnMrc, emlib.DT_FLOAT)
         pwutils.cleanPath(psdFile)
         try:
             program, args = self._getRecalCommand(
@@ -227,7 +228,7 @@ class ProtCTFTilt(ProtCTFMicrographs):
         # get the size and the image of psd
 
         imgPsd = ctfModel.getPsdFile()
-        imgh = ImageHandler()
+        imgh = emlib.image.ImageHandler()
         size, _, _, _ = imgh.getDimensions(imgPsd)
 
         mic = ctfModel.getMicrograph()

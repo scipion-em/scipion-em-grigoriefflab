@@ -29,7 +29,7 @@ import os
 import sys
 
 import pyworkflow as pw
-from pwem.emlib.image import ImageHandler, DT_FLOAT
+from pwem import emlib
 from pwem.objects import CTFModel
 from pwem.protocols import ProtCTFMicrographs
 from pyworkflow.utils import makePath
@@ -89,7 +89,7 @@ class ProtCTFFind(ProtCTFMicrographs):
             downFactor = self.ctfDownFactor.get()
             micFnMrc = os.path.join(micDir, pw.utils.replaceBaseExt(micFn, 'mrc'))
 
-            ih = ImageHandler()
+            ih = emlib.image.ImageHandler()
 
             if not ih.existsLocation(micFn):
                 raise Exception("Missing input micrograph %s" % micFn)
@@ -99,7 +99,7 @@ class ProtCTFFind(ProtCTFMicrographs):
                 # that cannot be written (such as dm3)
                 ih.scaleFourier(micFn, micFnMrc, downFactor)
             else:
-                ih.convert(micFn, micFnMrc, DT_FLOAT)
+                ih.convert(micFn, micFnMrc, emlib.DT_FLOAT)
 
         except Exception as ex:
             sys.stderr.write("Some error happened: %s" % ex)

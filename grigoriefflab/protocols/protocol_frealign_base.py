@@ -35,7 +35,7 @@ from pyworkflow.protocol.params import (StringParam, BooleanParam, IntParam,
                                         PointerParam, EnumParam, FloatParam,
                                         TextParam)
 from pwem.protocols import EMProtocol
-from pwem.convert import ImageHandler
+from pwem.emlib.image import ImageHandler
 
 from grigoriefflab import Plugin
 from grigoriefflab.convert import geometryFromMatrix

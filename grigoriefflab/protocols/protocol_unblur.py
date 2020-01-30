@@ -209,7 +209,7 @@ class ProtUnblur(ProtAlignMovies):
         aveMicFn = movieBaseName + '_uncorrected_avg.mrc'
         
         if a0 > 1 or aN < lstFrame:
-            from pwem.convert import ImageHandler
+            from pwem.emlib.image import ImageHandler
             ih = ImageHandler()
             movieInputFn = movie.getFileName()
             

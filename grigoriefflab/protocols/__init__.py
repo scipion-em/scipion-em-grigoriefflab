@@ -34,3 +34,10 @@ from .protocol_frealign_base import ProtFrealignBase
 from .protocol_ml_classification import ProtFrealignClassify
 from .protocol_unblur import ProtUnblur
 from .protocol_summovie import ProtSummovie
+
+try:
+    from .protocol_ts_ctffind import ProtTsCtffind
+except ImportError:
+    raise ImportError(
+        'To use a Tomography protocol scipion-em-tomo plugin is required.'
+        ' See https://github.com/scipion-em/scipion-em-tomo for further details')

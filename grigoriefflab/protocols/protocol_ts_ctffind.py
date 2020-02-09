@@ -27,16 +27,16 @@
 import os
 import sys
 
-import pyworkflow as pw
 from pwem.protocols import EMProtocol, pwutils
 from pyworkflow.protocol import STEPS_PARALLEL
+from grigoriefflab.protocols.program_ctffind import ProgramCtffind
 
 try:
     from tomo.protocols import ProtTsEstimateCTF
-except ImportError as e:
-    print("You need to install the Tomo plugin...")
-
-from grigoriefflab.protocols.program_ctffind import ProgramCtffind
+except ImportError:
+    raise ImportError(
+        'To use a Tomography protocol scipion-em-tomo plugin is required.'
+        ' See https://github.com/scipion-em/scipion-em-tomo for further details')
 
 
 class ProtTsCtffind(ProtTsEstimateCTF):
